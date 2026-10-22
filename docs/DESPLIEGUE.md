@@ -31,7 +31,8 @@ Este proyecto se publica en un **sitio de Netlify nuevo**. Tu web actual
 
 1. Entra en https://app.netlify.com → **Add new site** (o *Add new project*) → **Import an existing project**.
 2. Elige **GitHub** y el repositorio **ArbitrajeRemoto**.
-3. Rama a desplegar: `main` (cuando fusionemos esta rama). Netlify leerá `netlify.toml`: no cambies *Build command* ni *Publish directory*.
+3. Rama a desplegar: `main`. Netlify leerá `netlify.toml`: no cambies *Build command* ni *Publish directory*.
+   (En GitHub conviene que `main` sea la rama por defecto: **Settings → General → Default branch**.)
 4. Antes de desplegar (o justo después), en **Site configuration → Environment variables → Add a variable**, crea:
    - `ADMIN_PASSPHRASE_HASH` = la línea `scrypt$...` (pégala tal cual, sin comillas).
    - `SESSION_SECRET` = el secreto generado.
@@ -60,7 +61,11 @@ Si `/session` responde `SERVER_MISCONFIGURED`, falta una variable de entorno o e
 
 ## 4. Plan gratuito: qué puede pasar
 
-Según fuentes secundarias de 2026 (**por verificar** en la documentación oficial):
+> **POR VERIFICAR.** El 22-10-2026 intenté dos veces leer `docs.netlify.com` y `netlify.com/pricing` desde el entorno de desarrollo
+> y la red lo bloqueó. Las cifras de abajo vienen de fuentes secundarias de 2026, no de la documentación oficial.
+> Las sustituiremos por tus mediciones reales (tabla al final de esta sección).
+
+Según fuentes secundarias de 2026:
 
 - El plan Free da **300 créditos al mes** con **tope duro**: si se agotan, Netlify **pausa todos tus sitios** hasta el mes siguiente.
   No hay cobros sorpresa ni tarjeta.
@@ -70,6 +75,18 @@ Según fuentes secundarias de 2026 (**por verificar** en la documentación ofici
   - Solo se despliega `main`; sin previews.
   - Respuestas pequeñas; la vista en vivo usa `ETag`/`304`, consulta cada 10 s y para cuando el partido acaba o la pestaña no se ve.
 - Revisa el consumo en **Team → Usage / Billing** la primera semana y dime las cifras.
+
+### Medición real (rellénala tú)
+
+Anota los créditos que marca Netlify **antes y después** de cada acción:
+
+| Acción | Créditos antes | Créditos después | Gasto |
+|---|---|---|---|
+| 1 despliegue de producción | | | |
+| `examples/curl.sh` completo (~45 peticiones) | | | |
+| `npm run seed` | | | |
+| 1 partido completo registrado desde la web (Bloque 2) | | | |
+| Vista en vivo abierta 10 min | | | |
 
 ## 5. Cambiar la frase o cerrar todas las sesiones
 
