@@ -23,7 +23,11 @@ export function useLocalData<T>(loader: () => Promise<T>, deps: unknown[]): T | 
 
 export function useSyncStatus(): SyncStatus {
   const [status, setStatus] = useState(getSyncStatus());
-  useEffect(() => onSyncStatus(setStatus), []);
+  useEffect(() => {
+    // The status may have changed between the first render and this subscription.
+    setStatus(getSyncStatus());
+    return onSyncStatus(setStatus);
+  }, []);
   return status;
 }
 

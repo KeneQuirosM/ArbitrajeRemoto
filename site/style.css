@@ -1,4 +1,0 @@
-:root { color-scheme: light dark; font: 100%/1.5 system-ui, -apple-system, sans-serif; }
-body { margin: 0; padding: 1rem; background: Canvas; color: CanvasText; }
-main { max-width: 40rem; margin: 0 auto; }
-a { color: LinkText; }

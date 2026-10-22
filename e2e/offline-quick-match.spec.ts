@@ -1,6 +1,22 @@
 import { expect, test, type Page } from '@playwright/test';
 import { E2E_PASSPHRASE } from '../playwright.config.ts';
 
+// Any console error (including Content-Security-Policy violations) fails the test.
+// Failed requests while the test is deliberately offline are expected and ignored.
+let consoleErrors: string[] = [];
+test.beforeEach(({ page }) => {
+  consoleErrors = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error' && !/Failed to load resource|ERR_INTERNET_DISCONNECTED|Failed to fetch|network connection was lost/i.test(message.text())) {
+      consoleErrors.push(message.text());
+    }
+  });
+  page.on('pageerror', (error) => consoleErrors.push(String(error)));
+});
+test.afterEach(() => {
+  expect(consoleErrors).toEqual([]);
+});
+
 async function login(page: Page) {
   await page.goto('/#/ajustes');
   await page.getByLabel('Frase de acceso').fill(E2E_PASSPHRASE);
@@ -39,11 +55,16 @@ test('quick match without connection syncs once, without duplicates, when the co
   await page.reload();
   await expect(page.locator('.side-home .side-score')).toHaveText('1');
   await expect(page.locator('.timeline-item')).toHaveCount(3);
+  await expect(page.locator('.sync-badge')).toContainText('Sin conexión');
 
   await context.setOffline(false);
   await expect(page.locator('.sync-badge')).toHaveText('Sincronizado', { timeout: 15_000 });
 
-  const read = async () => (await page.request.get(`/api/v1/matches/${matchId}?include=events`)).json();
+  const read = async () => {
+    const res = await page.request.get(`/api/v1/matches/${matchId}?include=events`);
+    expect(res.status(), await res.text()).toBe(200);
+    return res.json();
+  };
   let remote = await read();
   expect(remote.match).toMatchObject({ homeTeamName: 'Local', awayTeamName: 'Visitante' });
   expect(remote.events).toHaveLength(3);

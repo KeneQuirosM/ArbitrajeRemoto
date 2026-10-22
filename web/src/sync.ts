@@ -16,7 +16,8 @@ export interface SyncStatus {
 }
 
 const EVENT_BATCH = 200;
-let status: SyncStatus = { phase: 'idle', pending: 0, lastSyncAt: null, lastError: null };
+// Starts as 'syncing': the real state is unknown until the first check (never claim "synced" too early).
+let status: SyncStatus = { phase: 'syncing', pending: 0, lastSyncAt: null, lastError: null };
 const statusListeners = new Set<(s: SyncStatus) => void>();
 
 export function getSyncStatus(): SyncStatus {
