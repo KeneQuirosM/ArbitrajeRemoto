@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { E2E_PASSPHRASE } from '../playwright.config.ts';
 
 // Any console error (including Content-Security-Policy violations) fails the test.
@@ -31,14 +31,8 @@ async function recordPlayerEvent(page: Page, panel: 'home' | 'away', button: str
   await expect(page.locator('dialog')).toHaveCount(0);
 }
 
-test('quick match without connection syncs once, without duplicates, when the connection returns', async ({ page, context }) => {
-  await login(page);
-  await page.goto('/');
-  // The app shell must be cached by the service worker before going offline.
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-  });
-
+/** Creates a quick match and records kick-off, a home goal (9) and an away yellow (4) while offline. */
+async function offlineQuickMatch(page: Page, context: BrowserContext): Promise<string> {
   await context.setOffline(true);
   await page.getByRole('button', { name: 'Partido rápido' }).click();
   await expect(page.locator('.scoreline')).toContainText('Local');
@@ -50,15 +44,35 @@ test('quick match without connection syncs once, without duplicates, when the co
   await expect(page.locator('.side-home .side-score')).toHaveText('1');
   await expect(page.locator('.sync-badge')).toContainText('Sin conexión');
   await expect(page.locator('.sync-badge')).toContainText('4 pendientes');
+  return matchId;
+}
 
-  // Reload with no connection: the app opens from the cache and keeps the data.
+// Playwright can serve pages from a service worker only in Chromium ("Service workers are only
+// supported on Chromium-based browsers"); in WebKit an offline reload fails inside Playwright itself.
+// On a real iPhone this is covered by the manual test (close and reopen the app in airplane mode).
+test('the app reopens offline from its cache and keeps the recorded data', async ({ page, context, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Playwright supports service workers only in Chromium');
+  await page.goto('/');
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await offlineQuickMatch(page, context);
+
   await page.reload();
   await expect(page.locator('.side-home .side-score')).toHaveText('1');
   await expect(page.locator('.timeline-item')).toHaveCount(3);
   await expect(page.locator('.sync-badge')).toContainText('Sin conexión');
+  await expect(page.locator('.sync-badge')).toContainText('4 pendientes');
+});
+
+test('quick match without connection syncs once, without duplicates, when the connection returns', async ({ page, context }) => {
+  await login(page);
+  await page.goto('/');
+  const matchId = await offlineQuickMatch(page, context);
 
   await context.setOffline(false);
-  await expect(page.locator('.sync-badge')).toHaveText('Sincronizado', { timeout: 15_000 });
+  // 'online' triggers the sync at once; the 30 s periodic sync is the fallback.
+  await expect(page.locator('.sync-badge')).toHaveText('Sincronizado', { timeout: 40_000 });
 
   const read = async () => {
     const res = await page.request.get(`/api/v1/matches/${matchId}?include=events`);
