@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 
+const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8')) as { version: string };
+
 /**
  * Emits /sw.js with the exact list of built files to precache, so the app
  * opens offline. The cache name changes whenever any file changes.
@@ -28,6 +30,7 @@ function serviceWorker(): Plugin {
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   oxc: { jsx: { runtime: 'automatic', importSource: 'preact' } },
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [serviceWorker()],
   build: { outDir: 'dist', emptyOutDir: true, target: 'es2022' },
   server: { proxy: { '/api': 'http://localhost:8787' } },

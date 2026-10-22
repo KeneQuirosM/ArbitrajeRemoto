@@ -15,7 +15,11 @@
     "hash-passphrase": "node scripts/hash-passphrase.ts",
     "gen-secret": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\"",
     "seed": "node scripts/seed.ts",
-    "smoke": "bash examples/curl.sh"
+    "smoke": "bash examples/curl.sh",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build": "vite build --config web/vite.config.ts",
+    "preview": "vite preview --config web/vite.config.ts",
+    "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.6",
