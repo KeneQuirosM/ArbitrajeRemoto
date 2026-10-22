@@ -1,9 +1,11 @@
-// Local API server for development and the curl examples (no Netlify account needed).
+// Local server for development, the curl examples and the end-to-end tests (no Netlify account needed).
+// Serves the API at /api/v1 and the built web app (web/dist, after `npm run build`) everywhere else.
 // Usage: npm run dev:api   (reads .env if present; data saved in .data/store.json)
 // Plain http on localhost: cookies are sent without the Secure flag here only.
 
 import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { extname, join, normalize } from 'node:path';
 import { createServer } from 'node:http';
 import { createApp } from '../server/app.ts';
 import { FileStore, MemoryStore } from '../server/store.ts';
@@ -14,7 +16,35 @@ const port = Number(process.env.PORT ?? 8787);
 const store = process.env.DEV_STORE === 'memory' ? new MemoryStore() : new FileStore('.data/store.json');
 const app = createApp({ store, env: process.env, now: Date.now, uuid: randomUUID, secureCookies: false });
 
+const STATIC_DIR = process.env.STATIC_DIR ?? 'web/dist';
+const TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+};
+
+function serveStatic(url: string): { status: number; type: string; body: Buffer } {
+  const path = decodeURIComponent(new URL(url, 'http://localhost').pathname);
+  const file = normalize(join(STATIC_DIR, path === '/' ? 'index.html' : path));
+  if (!file.startsWith(normalize(STATIC_DIR)) || !existsSync(file) || !statSync(file).isFile()) {
+    const index = join(STATIC_DIR, 'index.html');
+    if (!existsSync(index)) return { status: 404, type: 'text/plain', body: Buffer.from('Run `npm run build` first') };
+    return { status: 404, type: 'text/plain', body: Buffer.from('Not found') };
+  }
+  return { status: 200, type: TYPES[extname(file)] ?? 'application/octet-stream', body: readFileSync(file) };
+}
+
 const server = createServer(async (req, res) => {
+  if (!req.url?.startsWith('/api/')) {
+    const file = serveStatic(req.url ?? '/');
+    res.writeHead(file.status, { 'Content-Type': file.type, 'Cache-Control': 'no-cache' });
+    res.end(file.body);
+    return;
+  }
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(chunk as Buffer);
   const body = chunks.length ? Buffer.concat(chunks) : undefined;
@@ -35,5 +65,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(port, '127.0.0.1', () => {
-  console.log(`ArbitrajeRemoto API listening on http://localhost:${port}/api/v1`);
+  console.log(`ArbitrajeRemoto on http://localhost:${port}/ (API at /api/v1)`);
 });
