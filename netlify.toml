@@ -1,0 +1,23 @@
+# ArbitrajeRemoto on Netlify: static site + Functions (API v1) + Blobs.
+# Block 1 only publishes a placeholder page; the PWA arrives in block 2.
+
+[build]
+  publish = "site"
+  # No build step yet. Tests run in GitHub Actions, not in Netlify builds (saves credits).
+  command = "echo 'No build step yet'"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
