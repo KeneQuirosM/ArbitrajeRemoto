@@ -27,6 +27,7 @@ call() {
   local args=(-sS -o "$OUT" -w '%{http_code}' -X "$method" -b "$JAR" -c "$JAR" "$@")
   [[ -n "$body" ]] && args+=(-H 'Content-Type: application/json' --data "$body")
   local status
+  : > "$OUT"   # a 304 has no body: do not show the previous response
   status="$(curl "${args[@]}" "$BASE$path")"
   printf '\n→ %s %s  [%s]\n' "$method" "$path" "$status"
   [[ -s "$OUT" ]] && jq -c . "$OUT" 2>/dev/null | cut -c1-400 || true
