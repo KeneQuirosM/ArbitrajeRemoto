@@ -1,0 +1,840 @@
+openapi: 3.1.0
+info:
+  title: ArbitrajeRemoto API
+  version: 1.0.0
+  summary: Football referee match log — web app and ArbitrajeRemoto Reloj (Wear OS).
+  description: |
+    Match state (status, score, clock, cards) is never stored: it is derived from an
+    append-only log of client-generated, idempotent events. See docs/API.md (Spanish)
+    for the narrative contract and docs/CRONOMETRO.md for the clock algorithm.
+servers:
+  - url: https://{site}.netlify.app/api/v1
+    variables:
+      site:
+        default: arbitrajeremoto
+  - url: http://localhost:8787/api/v1
+    description: Local dev server (npm run dev:api)
+
+security:
+  - ownerSession: []
+  - deviceKey: []
+
+tags:
+  - name: system
+    description: Health and server time
+  - name: session
+    description: Owner login with the passphrase
+  - name: matches
+    description: Matches and their derived state
+  - name: events
+    description: Append-only, idempotent event log
+  - name: live
+    description: Public read-only live view
+  - name: teams
+    description: Teams and rosters
+  - name: pairing
+    description: Watch pairing (code shown on the watch, approved in the web)
+  - name: devices
+    description: Paired devices and key revocation
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      tags: [system]
+      summary: Liveness and server time
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version, serverTime]
+                properties:
+                  ok: { type: boolean }
+                  version: { type: string }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+
+  /session:
+    get:
+      operationId: getSession
+      tags: [session]
+      summary: Who am I
+      security: [{}, ownerSession: [], deviceKey: []]
+      responses:
+        '200':
+          description: Authentication status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [authenticated]
+                properties:
+                  authenticated: { type: boolean }
+                  role: { type: string, enum: [owner, device] }
+                  deviceId: { type: string }
+                  keyId: { type: string }
+    post:
+      operationId: login
+      tags: [session]
+      summary: Owner login with the passphrase
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [passphrase]
+              properties:
+                passphrase: { type: string, maxLength: 256 }
+      responses:
+        '200':
+          description: Logged in. Sets the ar_session cookie (HttpOnly; Secure; SameSite=Strict; Path=/api; 30 days).
+          headers:
+            Set-Cookie: { schema: { type: string } }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authenticated: { const: true }
+                  role: { const: owner }
+                  expiresAt: { $ref: '#/components/schemas/Timestamp' }
+        '401': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '500': { $ref: '#/components/responses/Error' }
+    delete:
+      operationId: logout
+      tags: [session]
+      summary: Logout (clears the cookie)
+      security: []
+      responses:
+        '204': { description: Cookie cleared }
+
+  /matches:
+    get:
+      operationId: listMatches
+      tags: [matches]
+      summary: List matches (no pagination)
+      parameters:
+        - name: status
+          in: query
+          description: Comma-separated statuses, e.g. scheduled,live
+          schema: { type: string, example: 'scheduled,live' }
+        - name: fields
+          in: query
+          description: Comma-separated MatchSummary fields to return (id is always included)
+          schema: { type: string, example: 'homeTeamName,awayTeamName,scheduledAt,status' }
+      responses:
+        '200':
+          description: Matches ordered by scheduledAt (or createdAt)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [matches, serverTime]
+                properties:
+                  matches:
+                    type: array
+                    items: { $ref: '#/components/schemas/MatchSummary' }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: createMatch
+      tags: [matches]
+      summary: Create a match (idempotent by client id)
+      description: |
+        Resending the same request returns 200 with duplicate=true, even if the owner
+        edited the match meanwhile. Same id with different data → 409 ID_CONFLICT.
+        A deleted match id → 410. Without teams or names the match is "Local" vs "Visitante".
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/MatchFields'
+                - type: object
+                  properties:
+                    id: { $ref: '#/components/schemas/Uuid' }
+                    deviceId: { $ref: '#/components/schemas/DeviceId' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchWriteResponse' }
+        '200':
+          description: Already existed (duplicate=true)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchWriteResponse' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /matches/{id}:
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+    get:
+      operationId: getMatch
+      tags: [matches]
+      summary: Get one match with its derived state
+      parameters:
+        - name: include
+          in: query
+          schema: { type: string, example: 'events,timeline' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [match, state, serverTime]
+                properties:
+                  match: { $ref: '#/components/schemas/Match' }
+                  state: { $ref: '#/components/schemas/CompactState' }
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/StoredEvent' }
+                  timeline:
+                    type: array
+                    items: { $ref: '#/components/schemas/TimelineEvent' }
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        eventId: { type: string }
+                        code: { type: string }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      operationId: updateMatch
+      tags: [matches]
+      summary: Edit a match (owner only)
+      security: [ownerSession: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/MatchFields'
+                - type: object
+                  properties:
+                    rotateLiveToken: { type: boolean, description: Invalidate the previous live link }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match: { $ref: '#/components/schemas/Match' }
+                  state: { $ref: '#/components/schemas/CompactState' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+    delete:
+      operationId: deleteMatch
+      tags: [matches]
+      summary: Delete a match (owner only, keeps a tombstone)
+      security: [ownerSession: []]
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /matches/{id}/events:
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: Read events after a sequence number
+      parameters:
+        - name: since
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+      responses:
+        '200':
+          description: Events with seq > since, ordered by seq
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [events, lastSeq, state, serverTime]
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/StoredEvent' }
+                  lastSeq: { type: integer }
+                  state: { $ref: '#/components/schemas/CompactState' }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    post:
+      operationId: postEvents
+      tags: [events]
+      summary: Append a batch of events (idempotent, any order, retry-safe)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [events]
+              properties:
+                deviceId:
+                  $ref: '#/components/schemas/DeviceId'
+                  description: Required with the owner session; taken from the key for devices.
+                sentAt:
+                  $ref: '#/components/schemas/Timestamp'
+                  description: Device time when this request is sent (recompute on every retry).
+                events:
+                  type: array
+                  maxItems: 200
+                  items: { $ref: '#/components/schemas/EventInput' }
+      responses:
+        '200':
+          description: One result per input event, in order, plus the derived state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [results, state, clockOffsetMs, serverTime]
+                properties:
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/EventResult' }
+                  state: { $ref: '#/components/schemas/CompactState' }
+                  clockOffsetMs: { type: integer, description: Correction applied to this batch's timestamps }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+
+  /matches/{id}/live:
+    parameters:
+      - $ref: '#/components/parameters/MatchId'
+    get:
+      operationId: getLiveView
+      tags: [live]
+      summary: Public read-only live view (link with token)
+      security: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+        - name: If-None-Match
+          in: header
+          schema: { type: string }
+      responses:
+        '200':
+          description: Public data only (no notes, no device ids, no owner data)
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match:
+                    type: object
+                    properties:
+                      homeTeamName: { type: string }
+                      awayTeamName: { type: string }
+                      tournament: { type: [string, 'null'] }
+                      scheduledAt: { type: [string, 'null'], format: date-time }
+                      periods: { type: integer }
+                      periodMinutes: { type: integer }
+                  state:
+                    type: object
+                    properties:
+                      status: { $ref: '#/components/schemas/MatchStatus' }
+                      score: { $ref: '#/components/schemas/Score' }
+                      clock: { $ref: '#/components/schemas/Clock' }
+                      lastSeq: { type: integer }
+                  timeline:
+                    type: array
+                    items: { $ref: '#/components/schemas/TimelineEvent' }
+                  serverTime: { $ref: '#/components/schemas/Timestamp' }
+        '304': { description: Not modified }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /teams:
+    get:
+      operationId: listTeams
+      tags: [teams]
+      summary: List teams with players
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items: { $ref: '#/components/schemas/Team' }
+
+  /teams/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/Uuid' }
+    put:
+      operationId: putTeam
+      tags: [teams]
+      summary: Create or replace a team (owner only)
+      security: [ownerSession: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 60 }
+                players:
+                  type: array
+                  maxItems: 60
+                  items:
+                    type: object
+                    required: [number]
+                    properties:
+                      id: { $ref: '#/components/schemas/Uuid' }
+                      number: { $ref: '#/components/schemas/PlayerNumber' }
+                      name: { type: [string, 'null'], maxLength: 60 }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { type: object, properties: { team: { $ref: '#/components/schemas/Team' } } }
+        '200':
+          description: Replaced
+          content:
+            application/json:
+              schema: { type: object, properties: { team: { $ref: '#/components/schemas/Team' } } }
+        '422': { $ref: '#/components/responses/Error' }
+    delete:
+      operationId: deleteTeam
+      tags: [teams]
+      summary: Delete a team (owner only)
+      security: [ownerSession: []]
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /pairing/request:
+    post:
+      operationId: requestPairingCode
+      tags: [pairing]
+      summary: 'Watch: get a 6-character code to show on screen'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId]
+              properties:
+                deviceId: { $ref: '#/components/schemas/DeviceId' }
+                deviceName: { type: string, maxLength: 40 }
+      responses:
+        '201':
+          description: Code created (valid 10 minutes, single use)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [code, pollToken, expiresAt, pollIntervalSeconds]
+                properties:
+                  code: { $ref: '#/components/schemas/PairingCode' }
+                  pollToken: { type: string, description: Secret; keep it on the watch only }
+                  expiresAt: { $ref: '#/components/schemas/Timestamp' }
+                  pollIntervalSeconds: { type: integer, example: 5 }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /pairing/approve:
+    post:
+      operationId: approvePairingCode
+      tags: [pairing]
+      summary: 'Owner (web): approve the code shown on the watch'
+      security: [ownerSession: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, description: Case-insensitive; spaces and dashes ignored }
+                deviceName: { type: string, maxLength: 40 }
+      responses:
+        '200':
+          description: Approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { const: approved }
+                  deviceId: { type: string }
+                  deviceName: { type: [string, 'null'] }
+        '404': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /pairing/poll:
+    post:
+      operationId: pollPairing
+      tags: [pairing]
+      summary: 'Watch: poll until approved; the device key is returned once'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, pollToken]
+              properties:
+                code: { $ref: '#/components/schemas/PairingCode' }
+                pollToken: { type: string }
+      responses:
+        '202':
+          description: Still pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { const: pending }
+                  expiresAt: { $ref: '#/components/schemas/Timestamp' }
+                  pollIntervalSeconds: { type: integer }
+        '200':
+          description: Approved — store deviceKey securely; it is never shown again
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, deviceKey, keyId, deviceId]
+                properties:
+                  status: { const: approved }
+                  deviceKey: { type: string, pattern: '^ark1_[0-9a-f]{16}_[A-Za-z0-9_-]{43}$' }
+                  keyId: { type: string }
+                  deviceId: { type: string }
+                  deviceName: { type: [string, 'null'] }
+        '404': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /devices:
+    get:
+      operationId: listDevices
+      tags: [devices]
+      summary: List paired devices (owner only)
+      security: [ownerSession: []]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items: { $ref: '#/components/schemas/Device' }
+
+  /devices/{keyId}:
+    delete:
+      operationId: revokeDevice
+      tags: [devices]
+      summary: Revoke a device key (owner only)
+      security: [ownerSession: []]
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[0-9a-f]{16}$' }
+      responses:
+        '204': { description: Revoked }
+        '404': { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    ownerSession:
+      type: apiKey
+      in: cookie
+      name: ar_session
+    deviceKey:
+      type: http
+      scheme: bearer
+      description: 'Device key from pairing: ark1_<keyId>_<secret>'
+
+  parameters:
+    MatchId:
+      name: id
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Uuid' }
+
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Uuid:
+      type: string
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO 8601 with explicit zone (Z or ±hh:mm). Responses are always UTC.
+    DeviceId:
+      type: string
+      pattern: '^[A-Za-z0-9._-]{1,64}$'
+    PlayerNumber:
+      type: integer
+      minimum: 1
+      maximum: 99
+    PairingCode:
+      type: string
+      pattern: '^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$'
+    TeamSide:
+      type: string
+      enum: [home, away]
+    MatchStatus:
+      type: string
+      enum: [scheduled, live, halftime, finished]
+    EventType:
+      type: string
+      enum: [goal, own_goal, yellow_card, red_card, substitution, note, period_start, period_pause, period_resume, period_end, added_time, match_end, void]
+    Score:
+      type: object
+      required: [home, away]
+      properties:
+        home: { type: integer }
+        away: { type: integer }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [BAD_REQUEST, VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, METHOD_NOT_ALLOWED, CONFLICT, ID_CONFLICT, CODE_USED, CODE_EXPIRED, GONE, PAYLOAD_TOO_LARGE, UNSUPPORTED_MEDIA_TYPE, RATE_LIMITED, SERVER_MISCONFIGURED, BUSY, INTERNAL]
+            message: { type: string }
+            details: { type: object }
+
+    MatchFields:
+      type: object
+      properties:
+        homeTeamId: { oneOf: [{ $ref: '#/components/schemas/Uuid' }, { type: 'null' }] }
+        awayTeamId: { oneOf: [{ $ref: '#/components/schemas/Uuid' }, { type: 'null' }] }
+        homeTeamName: { type: [string, 'null'], maxLength: 60 }
+        awayTeamName: { type: [string, 'null'], maxLength: 60 }
+        scheduledAt: { type: [string, 'null'], format: date-time }
+        periods: { type: integer, minimum: 1, maximum: 4, default: 2 }
+        periodMinutes: { type: integer, minimum: 1, maximum: 60, default: 45 }
+        tournament: { type: [string, 'null'], maxLength: 80 }
+
+    Match:
+      type: object
+      required: [id, homeTeamId, awayTeamId, homeTeamName, awayTeamName, scheduledAt, periods, periodMinutes, tournament, createdAt, updatedAt, createdByDeviceId]
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        homeTeamId: { type: [string, 'null'] }
+        awayTeamId: { type: [string, 'null'] }
+        homeTeamName: { type: string }
+        awayTeamName: { type: string }
+        scheduledAt: { type: [string, 'null'], format: date-time }
+        periods: { type: integer }
+        periodMinutes: { type: integer }
+        tournament: { type: [string, 'null'] }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+        createdByDeviceId: { type: [string, 'null'] }
+        liveToken: { type: string, description: Owner only }
+
+    MatchSummary:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        homeTeamId: { type: [string, 'null'] }
+        awayTeamId: { type: [string, 'null'] }
+        homeTeamName: { type: string }
+        awayTeamName: { type: string }
+        scheduledAt: { type: [string, 'null'], format: date-time }
+        tournament: { type: [string, 'null'] }
+        periods: { type: integer }
+        periodMinutes: { type: integer }
+        status: { $ref: '#/components/schemas/MatchStatus' }
+        score: { $ref: '#/components/schemas/Score' }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+        lastSeq: { type: integer }
+
+    MatchWriteResponse:
+      type: object
+      required: [match, state, duplicate]
+      properties:
+        match: { $ref: '#/components/schemas/Match' }
+        state: { $ref: '#/components/schemas/CompactState' }
+        duplicate: { type: boolean }
+
+    Clock:
+      type: object
+      required: [period, running, elapsedMs, anchorAt, addedMinutes]
+      description: 'Played time of the current period = elapsedMs + (running ? serverNow - anchorAt : 0)'
+      properties:
+        period: { type: [integer, 'null'] }
+        running: { type: boolean }
+        elapsedMs: { type: integer }
+        anchorAt: { type: [integer, 'null'], description: Epoch ms (server-corrected) of the last start/resume }
+        addedMinutes: { type: [integer, 'null'] }
+
+    CompactState:
+      type: object
+      required: [status, score, clock, discipline, lastSeq]
+      properties:
+        status: { $ref: '#/components/schemas/MatchStatus' }
+        score: { $ref: '#/components/schemas/Score' }
+        clock: { $ref: '#/components/schemas/Clock' }
+        discipline:
+          type: array
+          items:
+            type: object
+            properties:
+              team: { $ref: '#/components/schemas/TeamSide' }
+              playerNumber: { type: integer }
+              yellow: { type: integer }
+              red: { type: boolean }
+              secondYellow: { type: boolean }
+        lastSeq: { type: integer }
+
+    EventInput:
+      type: object
+      required: [id, type, clientTimestamp]
+      description: Fields that do not apply to the type are ignored. See docs/API.md for which fields each type needs.
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        matchId: { $ref: '#/components/schemas/Uuid' }
+        type: { $ref: '#/components/schemas/EventType' }
+        team: { $ref: '#/components/schemas/TeamSide' }
+        playerNumber: { $ref: '#/components/schemas/PlayerNumber' }
+        playerOutNumber: { $ref: '#/components/schemas/PlayerNumber' }
+        playerInNumber: { $ref: '#/components/schemas/PlayerNumber' }
+        text: { type: string, minLength: 1, maxLength: 500 }
+        voidsEventId: { $ref: '#/components/schemas/Uuid' }
+        period: { type: integer, minimum: 1, maximum: 4 }
+        minutes: { type: integer, minimum: 0, maximum: 30 }
+        clientTimestamp: { $ref: '#/components/schemas/Timestamp' }
+        matchMinute: { type: integer, minimum: 0, maximum: 400 }
+        deviceId: { $ref: '#/components/schemas/DeviceId' }
+
+    StoredEvent:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        matchId: { $ref: '#/components/schemas/Uuid' }
+        type: { $ref: '#/components/schemas/EventType' }
+        team: { oneOf: [{ $ref: '#/components/schemas/TeamSide' }, { type: 'null' }] }
+        playerNumber: { type: [integer, 'null'] }
+        playerOutNumber: { type: [integer, 'null'] }
+        playerInNumber: { type: [integer, 'null'] }
+        text: { type: [string, 'null'] }
+        voidsEventId: { type: [string, 'null'] }
+        period: { type: [integer, 'null'] }
+        minutes: { type: [integer, 'null'] }
+        clientTimestamp: { $ref: '#/components/schemas/Timestamp' }
+        matchMinute: { type: [integer, 'null'] }
+        deviceId: { type: string }
+        seq: { type: integer }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        clockOffsetMs: { type: integer }
+        t: { type: integer, description: Effective time (epoch ms) = clientTimestamp + clockOffsetMs }
+
+    TimelineEvent:
+      type: object
+      properties:
+        id: { type: string }
+        type: { $ref: '#/components/schemas/EventType' }
+        team: { oneOf: [{ $ref: '#/components/schemas/TeamSide' }, { type: 'null' }] }
+        playerNumber: { type: [integer, 'null'] }
+        playerOutNumber: { type: [integer, 'null'] }
+        playerInNumber: { type: [integer, 'null'] }
+        text: { type: [string, 'null'], description: Owner/device views only }
+        period: { type: [integer, 'null'] }
+        minutes: { type: [integer, 'null'] }
+        atPeriod: { type: [integer, 'null'] }
+        minuteLabel: { type: [string, 'null'], example: '45+2' }
+
+    EventResult:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: [string, 'null'] }
+        status: { type: string, enum: [accepted, duplicate, rejected] }
+        reason: { type: string, description: Only when rejected }
+
+    Team:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Uuid' }
+        name: { type: string }
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { $ref: '#/components/schemas/Uuid' }
+              number: { $ref: '#/components/schemas/PlayerNumber' }
+              name: { type: [string, 'null'] }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        updatedAt: { $ref: '#/components/schemas/Timestamp' }
+
+    Device:
+      type: object
+      properties:
+        keyId: { type: string }
+        deviceId: { type: string }
+        deviceName: { type: [string, 'null'] }
+        createdAt: { $ref: '#/components/schemas/Timestamp' }
+        lastSeenAt: { type: [string, 'null'], format: date-time }
+        revokedAt: { type: [string, 'null'], format: date-time }

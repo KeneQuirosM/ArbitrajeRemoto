@@ -31,7 +31,7 @@ export const API_PREFIX = '/api/v1';
 export const API_VERSION = '1.0.0';
 
 type Handler = (ctx: Ctx) => Promise<Response>;
-type Route = { method: string; pattern: RegExp; keys: string[]; handler: Handler };
+type Route = { method: string; path: string; pattern: RegExp; keys: string[]; handler: Handler };
 
 const health: Handler = async (ctx) =>
   json({ ok: true, version: API_VERSION, serverTime: new Date(ctx.deps.now()).toISOString() });
@@ -46,7 +46,7 @@ function route(method: string, path: string, handler: Handler): Route {
       }) +
       '/?$',
   );
-  return { method, pattern, keys, handler };
+  return { method, path, pattern, keys, handler };
 }
 
 const ROUTES: Route[] = [
@@ -71,6 +71,9 @@ const ROUTES: Route[] = [
   route('GET', '/devices', listDevices),
   route('DELETE', '/devices/{keyId}', revokeDevice),
 ];
+
+/** [method, path] of every route, used to keep openapi.yaml in sync. */
+export const ROUTE_TABLE: ReadonlyArray<readonly [string, string]> = ROUTES.map((r) => [r.method, r.path] as const);
 
 export function createApp(deps: Deps) {
   return {
