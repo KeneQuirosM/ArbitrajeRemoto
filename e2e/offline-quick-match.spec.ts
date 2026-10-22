@@ -92,7 +92,9 @@ test('quick match without connection syncs once, without duplicates, when the co
   }
   remote = await read();
   expect(remote.events).toHaveLength(3);
-  expect((await (await page.request.get('/api/v1/matches')).json()).matches).toHaveLength(1);
+  // The test server is shared by the parallel browser projects: count only this match.
+  const all = (await (await page.request.get('/api/v1/matches')).json()).matches as { id: string }[];
+  expect(all.filter((m) => m.id === matchId)).toHaveLength(1);
 });
 
 test('undo asks for confirmation and removes the goal from the score', async ({ page }) => {
