@@ -31,7 +31,8 @@ Este proyecto se publica en un **sitio de Netlify nuevo**. Tu web actual
 
 1. Entra en https://app.netlify.com → **Add new site** (o *Add new project*) → **Import an existing project**.
 2. Elige **GitHub** y el repositorio **ArbitrajeRemoto**.
-3. Rama a desplegar: `main`. Netlify leerá `netlify.toml`: no cambies *Build command* ni *Publish directory*.
+3. Rama a desplegar: `main`. Netlify leerá `netlify.toml` (*Build command* `npm run build`, *Publish directory* `web/dist`): no los cambies.
+   **Por verificar:** Netlify debe instalar también las `devDependencies` (Vite) para compilar; es su comportamiento por defecto salvo que `NODE_ENV=production` esté definida. Si el despliegue falla con «vite: not found», dímelo.
    (En GitHub conviene que `main` sea la rama por defecto: **Settings → General → Default branch**.)
 4. Antes de desplegar (o justo después), en **Site configuration → Environment variables → Add a variable**, crea:
    - `ADMIN_PASSPHRASE_HASH` = la línea `scrypt$...` (pégala tal cual, sin comillas).
@@ -48,6 +49,7 @@ Este proyecto se publica en un **sitio de Netlify nuevo**. Tu web actual
 
 Desde cualquier navegador:
 
+- `https://<tu-sitio>.netlify.app/` → se abre la web nueva (lista de partidos).
 - `https://<tu-sitio>.netlify.app/api/v1/health` → debe mostrar `{"ok":true,...}`.
 
 Desde tu PC (opcional, crea datos de prueba y los borra al final):
