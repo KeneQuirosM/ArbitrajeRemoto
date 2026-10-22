@@ -17,6 +17,8 @@ const store = process.env.DEV_STORE === 'memory' ? new MemoryStore() : new FileS
 const app = createApp({ store, env: process.env, now: Date.now, uuid: randomUUID, secureCookies: false });
 
 const STATIC_DIR = process.env.STATIC_DIR ?? 'web/dist';
+// Same Content-Security-Policy as production, so CSP problems show up locally and in the e2e tests.
+const CSP = /Content-Security-Policy = "([^"]+)"/.exec(readFileSync('netlify.toml', 'utf8'))?.[1] ?? '';
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -41,7 +43,7 @@ function serveStatic(url: string): { status: number; type: string; body: Buffer 
 const server = createServer(async (req, res) => {
   if (!req.url?.startsWith('/api/')) {
     const file = serveStatic(req.url ?? '/');
-    res.writeHead(file.status, { 'Content-Type': file.type, 'Cache-Control': 'no-cache' });
+    res.writeHead(file.status, { 'Content-Type': file.type, 'Cache-Control': 'no-cache', 'Content-Security-Policy': CSP });
     res.end(file.body);
     return;
   }

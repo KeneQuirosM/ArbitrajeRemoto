@@ -1,10 +1,9 @@
-# ArbitrajeRemoto on Netlify: static site + Functions (API v1) + Blobs.
-# Block 1 only publishes a placeholder page; the PWA arrives in block 2.
+# ArbitrajeRemoto on Netlify: static site (PWA) + Functions (API v1) + Blobs.
 
 [build]
-  publish = "site"
-  # No build step yet. Tests run in GitHub Actions, not in Netlify builds (saves credits).
-  command = "echo 'No build step yet'"
+  publish = "web/dist"
+  # Only the build runs here; tests run in GitHub Actions (saves Netlify credits).
+  command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "22"
@@ -20,4 +19,21 @@
     Referrer-Policy = "no-referrer"
     X-Frame-Options = "DENY"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    Content-Security-Policy = "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+# The service worker and the page must always be revalidated so updates arrive.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+# Built files have a content hash in their name: cache them for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

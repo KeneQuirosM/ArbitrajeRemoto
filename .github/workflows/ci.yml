@@ -19,6 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run build
       - name: Smoke test (curl examples against the local API)
         run: |
           export ADMIN_PASSPHRASE_HASH="$(printf '%s' 'ci passphrase for smoke tests' | node scripts/hash-passphrase.ts)"
@@ -26,3 +27,22 @@ jobs:
           DEV_STORE=memory node scripts/dev-server.ts &
           for i in $(seq 1 30); do curl -sf http://localhost:8787/api/v1/health >/dev/null && break; sleep 1; done
           PASSPHRASE='ci passphrase for smoke tests' bash examples/curl.sh
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run build
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
