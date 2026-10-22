@@ -2,12 +2,13 @@ import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { E2E_PASSPHRASE } from '../playwright.config.ts';
 
 // Any console error (including Content-Security-Policy violations) fails the test.
-// Failed requests while the test is deliberately offline are expected and ignored.
+// Failed requests while the test is deliberately offline are expected and ignored
+// (WebKit reports them as "Fetch API cannot load … due to access control checks").
 let consoleErrors: string[] = [];
 test.beforeEach(({ page }) => {
   consoleErrors = [];
   page.on('console', (message) => {
-    if (message.type() === 'error' && !/Failed to load resource|ERR_INTERNET_DISCONNECTED|Failed to fetch|network connection was lost/i.test(message.text())) {
+    if (message.type() === 'error' && !/Failed to load resource|ERR_INTERNET_DISCONNECTED|Failed to fetch|network connection was lost|due to access control checks/i.test(message.text())) {
       consoleErrors.push(message.text());
     }
   });
