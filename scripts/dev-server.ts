@@ -1,6 +1,8 @@
 // Local server for development, the curl examples and the end-to-end tests (no Netlify account needed).
 // Serves the API at /api/v1 and the built web app (web/dist, after `npm run build`) everywhere else.
-// Usage: npm run dev:api   (reads .env if present; data saved in .data/store.json)
+// Usage: npm run dev:api   (reads .env if present)
+// Storage: DEV_STORE=file (default, .data/store.json), memory, or postgres (uses DATABASE_URL,
+// e.g. a local Postgres after `npm run db:migrate`).
 // Plain http on localhost: cookies are sent without the Secure flag here only.
 
 import { randomUUID } from 'node:crypto';
@@ -8,17 +10,33 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { createServer } from 'node:http';
 import { createApp } from '../server/app.ts';
-import { FileStore, MemoryStore } from '../server/store.ts';
+import { createSql } from '../server/db.ts';
+import { PostgresStore } from '../server/pgstore.ts';
+import { FileStore, MemoryStore, type KVStore } from '../server/store.ts';
 
 if (existsSync('.env')) process.loadEnvFile('.env');
 
 const port = Number(process.env.PORT ?? 8787);
-const store = process.env.DEV_STORE === 'memory' ? new MemoryStore() : new FileStore('.data/store.json');
+function makeStore(): KVStore {
+  switch (process.env.DEV_STORE) {
+    case 'memory':
+      return new MemoryStore();
+    case 'postgres':
+      if (!process.env.DATABASE_URL) throw new Error('DEV_STORE=postgres needs DATABASE_URL');
+      return new PostgresStore(createSql(process.env.DATABASE_URL));
+    default:
+      return new FileStore('.data/store.json');
+  }
+}
+const store = makeStore();
 const app = createApp({ store, env: process.env, now: Date.now, uuid: randomUUID, secureCookies: false });
 
 const STATIC_DIR = process.env.STATIC_DIR ?? 'web/dist';
 // Same Content-Security-Policy as production, so CSP problems show up locally and in the e2e tests.
-const CSP = /Content-Security-Policy = "([^"]+)"/.exec(readFileSync('netlify.toml', 'utf8'))?.[1] ?? '';
+const CSP =
+  (JSON.parse(readFileSync('vercel.json', 'utf8')) as { headers: { headers: { key: string; value: string }[] }[] }).headers
+    .flatMap((rule) => rule.headers)
+    .find((h) => h.key === 'Content-Security-Policy')?.value ?? '';
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',

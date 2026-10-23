@@ -4,7 +4,6 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "lib": ["es2023", "dom", "dom.iterable"],
-    "types": ["node", "vite/client"],
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "strict": true,
@@ -16,5 +15,5 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["core", "server", "netlify", "scripts", "test", "web/src", "web/vite.config.ts", "e2e", "vitest.config.ts", "playwright.config.ts"]
+  "include": ["core", "server", "api", "netlify", "scripts", "test", "web/src", "web/vite.config.ts", "e2e", "vitest.config.ts", "playwright.config.ts"]
 }
