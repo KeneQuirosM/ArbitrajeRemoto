@@ -2,10 +2,9 @@
 
 Contrato de la API que usan la web y la app del reloj (ArbitrajeRemoto Reloj).
 La especificación formal está en [`openapi.yaml`](../openapi.yaml) y hay ejemplos ejecutables en
-[`examples/curl.sh`](../examples/curl.sh). Para la app del reloj, lee también `docs/GUIA_RELOJ.md`
-(se entrega al final del Bloque 3).
+[`examples/curl.sh`](../examples/curl.sh). Para la app del reloj, lee también [`docs/GUIA_RELOJ.md`](GUIA_RELOJ.md).
 
-- **URL base:** `https://<tu-sitio>.netlify.app/api/v1` (solo HTTPS). En local: `http://localhost:8787/api/v1`.
+- **URL base:** `https://<tu-proyecto>.vercel.app/api/v1` (solo HTTPS). En local: `http://localhost:8787/api/v1`.
 - **Formato:** JSON UTF-8. Las peticiones con cuerpo llevan `Content-Type: application/json` (si no, `415`).
 - **Fechas:** ISO 8601 con zona explícita (`2026-10-25T16:05:00.000Z` o `...+02:00`). El servidor devuelve siempre UTC (`Z`).
 - **Ids:** UUID (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`). Los genera el cliente para partidos, eventos, equipos y jugadores; así se pueden crear sin conexión y reintentar sin duplicar.
@@ -22,7 +21,7 @@ La especificación formal está en [`openapi.yaml`](../openapi.yaml) y hay ejemp
 
 - La frase de acceso nunca se guarda: el servidor solo conoce su hash scrypt (`ADMIN_PASSPHRASE_HASH`).
 - Las `deviceKey` se guardan como SHA-256 y se pueden revocar (`DELETE /devices/{keyId}`). Al vincular de nuevo el mismo reloj (`deviceId`), sus claves anteriores se revocan.
-- `DELETE /session` borra la cookie del navegador. Para invalidar **todas** las sesiones, cambia `SESSION_SECRET` en Netlify.
+- `DELETE /session` borra la cookie del navegador. Para invalidar **todas** las sesiones, cambia `SESSION_SECRET` en Vercel y vuelve a desplegar.
 
 ## Errores
 
@@ -231,8 +230,8 @@ Devuelve `ETag`; con `If-None-Match` igual responde `304` sin cuerpo (consulta c
 
 ## Seguridad (resumen)
 
-- Solo HTTPS (Netlify; cabecera HSTS en `netlify.toml`). La cookie es `Secure`, `HttpOnly`, `SameSite=Strict` y limitada a `/api`.
+- Solo HTTPS (Vercel; cabecera HSTS en `vercel.json`). La cookie es `Secure`, `HttpOnly`, `SameSite=Strict` y limitada a `/api`.
 - Toda entrada se valida (tipos, rangos 1–99, longitudes) y el texto se limpia de caracteres de control. El texto se guarda tal cual y
   **se escapa al mostrarlo** (la web nunca usa `innerHTML` con datos).
 - Sin CORS: la API solo se usa desde su propio dominio (la web) o desde la app nativa del reloj.
-- Secretos solo en variables de entorno de Netlify; nada en el repositorio (ver `docs/DESPLIEGUE.md`).
+- Secretos solo en variables de entorno de Vercel; nada en el repositorio (ver `docs/DESPLIEGUE.md`).

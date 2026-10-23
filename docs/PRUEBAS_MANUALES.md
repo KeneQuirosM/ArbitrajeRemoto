@@ -1,6 +1,6 @@
 # Pruebas manuales
 
-Lo que no puedo probar yo (tus cuentas de Vercel y Supabase, tu iPhone, tu PC, el reloj). Marca cada casilla y dime qué falla.
+Lo que no puedo probar yo (tus cuentas de Vercel y Supabase/Neon, tu iPhone, tu PC, el reloj). Marca cada casilla y dime qué falla.
 
 ## Bloque 1 — API
 
@@ -87,7 +87,8 @@ Requisito: el despliegue de `main` en Vercel (Bloque 2.5 incluido). Usa Safari e
 
 ## Bloque 2.5 — Vercel + Supabase
 
-Requisito: pasos 1–3 de `docs/DESPLIEGUE.md` hechos (ArbitrajeRemoto dentro de uno de tus proyectos de Supabase existentes). Repite también todas las pruebas del Bloque 2 en la dirección de Vercel:
+Requisito: pasos 1–3 de `docs/DESPLIEGUE.md` hechos (ArbitrajeRemoto dentro de uno de tus proyectos de Supabase existentes,
+o en Neon según §2-bis: donde pone "Supabase → Table Editor", usa el **SQL Editor** de Neon con una consulta `select`). Repite también todas las pruebas del Bloque 2 en la dirección de Vercel:
 son las mismas, solo cambia dónde se guardan los datos.
 
 ### Despliegue y base de datos (PC)
@@ -120,3 +121,58 @@ son las mismas, solo cambia dónde se guardan los datos.
        `matches` la fila sigue con `deleted_at` relleno (así un reenvío del reloj recibe 410 en vez de resucitarlo).
 7. [ ] Primera petición del día (con la app cerrada desde ayer): abre la app y mira cuánto tarda en pasar a "Sincronizado".
        Si son más de 5 segundos, dímelo (puede ser el "arranque en frío" de la función).
+
+## Bloque 3 — Vista en vivo, informe y relojes
+
+Requisito: la última versión desplegada en Vercel, con la sesión iniciada en la app.
+
+### Vista en vivo (iPhone + otro teléfono o el PC)
+
+1. [ ] Crea un partido rápido, inicia el 1.er tiempo y registra un gol del 9 local y una **nota**. Espera a "Sincronizado".
+2. [ ] En el marcador, pulsa **"Compartir en vivo"** → aparece el enlace. **"Compartir"** abre el menú del iPhone (WhatsApp,
+       Mensajes…); **"Copiar enlace"** dice "Enlace copiado".
+3. [ ] Abre el enlace en **otro** teléfono o en el PC, sin iniciar sesión → se ve "En vivo", **1 – 0**, el cronómetro corriendo
+       y "Gol de Local (n.º 9)". **No** aparece la nota, ni la barra de pestañas ni la etiqueta de sincronización.
+4. [ ] Registra otro gol en el iPhone → en la vista en vivo aparece en menos de ~15 s, sin recargar.
+5. [ ] Pausa el cronómetro en el iPhone → en la vista en vivo se detiene en el mismo segundo (±1 s) tras la siguiente actualización.
+6. [ ] Pon el otro teléfono en modo avión → la vista en vivo dice "Sin conexión. Reintentando…" y conserva el marcador. Al quitar el
+       modo avión vuelve a "Actualizado a las …".
+7. [ ] En el iPhone: "Compartir en vivo" → **"Cambiar enlace"** → confirmar → "Enlace nuevo creado". En la vista en vivo antigua,
+       en ≤ 10 s aparece "Este enlace no es válido o el árbitro lo cambió". El enlace nuevo sí funciona.
+8. [ ] Partido creado **sin conexión** y aún sin enviar: "Compartir en vivo" explica que el enlace aparece al sincronizar.
+
+### Informe y PDF (iPhone y PC)
+
+1. [ ] En un partido con goles, tarjetas (dos amarillas al mismo dorsal), un cambio y una nota, pulsa **"Informe"**.
+2. [ ] Aparecen: marcador, tabla de tiempos (inicio, fin, añadido, marcador al final de cada tiempo), goles, tarjetas
+       (la segunda dice "Segunda amarilla"), cambios. **La nota no sale** hasta marcar "Incluir mis notas (privadas)".
+3. [ ] Si el equipo tiene plantilla, junto al dorsal sale el nombre del jugador.
+4. [ ] Funciona en **modo avión** (el informe se arma con los datos del teléfono).
+5. [ ] iPhone, en Safari: **"Imprimir o guardar PDF"** → se abre la pantalla de impresión → botón Compartir →
+       **Guardar en Archivos** → el PDF se ve en blanco y negro, sin botones ni pestañas. **Por verificar:** si desde la app
+       instalada (icono en la pantalla de inicio) no se abre la impresión, prueba desde Safari y dime qué pasa.
+6. [ ] PC (Chrome/Edge): "Imprimir o guardar PDF" → destino **"Guardar como PDF"** → el PDF ocupa 1 página para un partido normal.
+7. [ ] **"Compartir como texto"** → en WhatsApp/Notas sale el resumen (resultado, goles, tarjetas, cambios), sin notas salvo que
+       las hayas incluido.
+8. [ ] En modo oscuro, el PDF sale igualmente en blanco y negro.
+
+### Relojes (PC o iPhone; sin la app del reloj todavía, con `curl`)
+
+Mientras no exista la app del reloj, `examples/curl.sh` hace de reloj. Para probar la pantalla a mano:
+
+1. [ ] En el PC: `curl -s -X POST https://<proyecto>.vercel.app/api/v1/pairing/request -H 'Content-Type: application/json' -d '{"deviceId":"watch-prueba","deviceName":"Reloj de prueba"}'`
+       → copia `code` y `pollToken`.
+2. [ ] En la web: Ajustes → **Relojes** → escribe el código **en minúsculas y con un guion** (`k7m-3qx`) → "Vincular reloj" →
+       "Reloj «Reloj de prueba» aprobado…".
+3. [ ] En el PC: `curl -s -X POST https://<proyecto>.vercel.app/api/v1/pairing/poll -H 'Content-Type: application/json' -d '{"code":"<code>","pollToken":"<pollToken>"}'`
+       → respuesta con `"deviceKey":"ark1_…"`. Pulsa **"Actualizar"** en la web → aparece "Reloj de prueba".
+4. [ ] Escribe otra vez el mismo código → "Ese código ya se usó…". Un código inventado (`AAAAAA`) → "Ese código no existe…".
+       Un código con `0` u `O` → aviso del formato, sin llamar al servidor.
+5. [ ] `curl -s https://<proyecto>.vercel.app/api/v1/matches -H 'Authorization: Bearer <deviceKey>'` → lista de partidos.
+6. [ ] En la web: **"Desvincular"** → confirmar → desaparece de la lista ("Ver desvinculados (1)" la muestra). La orden del paso 5
+       responde ahora `401`.
+
+### Con el reloj real (cuando exista la app)
+
+- [ ] Las pruebas de `docs/GUIA_RELOJ.md` §12.
+

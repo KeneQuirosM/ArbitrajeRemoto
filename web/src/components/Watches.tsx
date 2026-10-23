@@ -133,7 +133,7 @@ export function Watches() {
         </label>
         <label class="field">
           <span class="field-label">{t('watch.name')}</span>
-          <input class="input" type="text" maxLength={60} value={name} placeholder={t('watch.namePlaceholder')} onInput={(e) => setName((e.target as HTMLInputElement).value)} />
+          <input class="input" type="text" maxLength={40} value={name} placeholder={t('watch.namePlaceholder')} onInput={(e) => setName((e.target as HTMLInputElement).value)} />
         </label>
         {error ? (
           <p class="field-error" role="alert">

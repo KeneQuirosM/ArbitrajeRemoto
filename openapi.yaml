@@ -8,10 +8,10 @@ info:
     append-only log of client-generated, idempotent events. See docs/API.md (Spanish)
     for the narrative contract and docs/CRONOMETRO.md for the clock algorithm.
 servers:
-  - url: https://{site}.netlify.app/api/v1
+  - url: https://{site}.vercel.app/api/v1
     variables:
       site:
-        default: arbitrajeremoto
+        default: arbitraje-remoto
   - url: http://localhost:8787/api/v1
     description: Local dev server (npm run dev:api)
 
