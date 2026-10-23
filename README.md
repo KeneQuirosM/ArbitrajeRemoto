@@ -15,7 +15,8 @@ Registro de partidos para árbitros de fútbol: web (PWA, funciona sin conexión
 ## Stack
 
 - **Vercel** (plan Hobby): web estática + Functions (Node 22, TypeScript) + un cron diario.
-- **Supabase** (plan Free): Postgres, región `us-east-1`; Vercel en `iad1` (misma zona).
+- **Supabase** (plan Free): Postgres, dentro de un proyecto existente (esquema privado `arbitraje`, usuario propio
+  `arbitraje_app` con permisos solo sobre ese esquema). La función de Vercel va en la misma región que el proyecto.
 - **Web:** Preact + Vite, PWA con service worker propio, datos en IndexedDB y cola de cambios pendientes.
 - **TypeScript** en todo; `core/` es lógica pura compartida por la web y la API.
 - **Vitest** (unidad e integración) y **Playwright** (extremo a extremo, perfil iPhone en WebKit y Chromium); **GitHub Actions** como CI.

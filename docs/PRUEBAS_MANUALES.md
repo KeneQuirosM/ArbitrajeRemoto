@@ -87,14 +87,17 @@ Requisito: el despliegue de `main` en Vercel (Bloque 2.5 incluido). Usa Safari e
 
 ## Bloque 2.5 — Vercel + Supabase
 
-Requisito: pasos 1–3 de `docs/DESPLIEGUE.md` hechos. Repite también todas las pruebas del Bloque 2 en la dirección de Vercel:
+Requisito: pasos 1–3 de `docs/DESPLIEGUE.md` hechos (ArbitrajeRemoto dentro de uno de tus proyectos de Supabase existentes). Repite también todas las pruebas del Bloque 2 en la dirección de Vercel:
 son las mismas, solo cambia dónde se guardan los datos.
 
 ### Despliegue y base de datos (PC)
 
 - [ ] Supabase → **Table Editor** → esquema `arbitraje`: aparecen 7 tablas, todas con **RLS enabled**.
-- [ ] Supabase → **Database → Policies**: el esquema `arbitraje` **no** tiene políticas (es lo correcto: solo entra el servidor).
-- [ ] Vercel → **Settings → Functions**: región **iad1** (Washington, D.C.).
+- [ ] Supabase → **Database → Policies**: en el esquema `arbitraje` cada tabla tiene **una sola** política,
+      `arbitraje_app_all`, para el rol `arbitraje_app` (ninguna para `anon` ni `authenticated`).
+- [ ] La consulta de aislamiento de `docs/DESPLIEGUE.md` §2.3 da `ve_tu_otra_app = false` y `ve_sus_eventos = true`.
+- [ ] Tu **otra app** (la que comparte el proyecto) sigue funcionando igual tras aplicar las migraciones.
+- [ ] Vercel → **Settings → Functions**: la región coincide con la de tu proyecto de Supabase (tabla de §3.4).
 - [ ] Vercel → **Settings → Environment Variables**: están `DATABASE_URL`, `ADMIN_PASSPHRASE_HASH`, `SESSION_SECRET` y `CRON_SECRET`.
 - [ ] La clave no llega al navegador: en el PC abre la web, pulsa F12 → **Sources/Fuentes**, busca `postgresql` en los
       archivos `.js` → **0 resultados**.
