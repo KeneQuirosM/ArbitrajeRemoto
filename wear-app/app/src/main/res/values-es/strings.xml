@@ -34,4 +34,75 @@
     <string name="settings_device_id">Id del reloj</string>
     <string name="settings_pair_again">Vincular de nuevo</string>
     <string name="settings_version">Versión %1$s</string>
+
+    <!-- Inicio: partidos -->
+    <string name="home_quick_match">Partido rápido</string>
+    <string name="home_local_matches">Partidos en el reloj</string>
+    <string name="home_no_matches">Todavía no hay partidos</string>
+    <string name="home_match_item">%1$s %2$d – %3$d %4$s</string>
+
+    <!-- Estado del partido -->
+    <string name="status_scheduled">Sin empezar</string>
+    <string name="status_live">%1$s′ · %2$s</string>
+    <string name="status_paused">Pausa · %1$s′</string>
+    <string name="status_halftime">Descanso</string>
+    <string name="status_finished">Final</string>
+    <string name="added_announced">+%1$d anunciados</string>
+    <string name="score_description">%1$s %2$d, %3$s %4$d. %5$s</string>
+
+    <!-- Cronómetro -->
+    <string name="clock_start">Iniciar %1$d.º tiempo</string>
+    <string name="clock_pause">Pausar</string>
+    <string name="clock_resume">Reanudar</string>
+    <string name="clock_end_period">Fin del %1$d.º tiempo</string>
+    <string name="clock_end_match">Terminar partido</string>
+    <string name="clock_finished">Partido terminado</string>
+    <string name="clock_more_hint">Mantén pulsado: fin del tiempo / terminar</string>
+    <string name="clock_more_label">Más acciones del cronómetro</string>
+    <string name="clock_rare_title">Cronómetro</string>
+
+    <!-- Acciones -->
+    <string name="action_goal">Gol</string>
+    <string name="action_yellow">Amarilla</string>
+    <string name="action_red">Roja</string>
+    <string name="action_more">Más</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_for_team">%1$s, %2$s</string>
+    <string name="more_title">Más</string>
+    <string name="more_own_goal">Autogol %1$s</string>
+    <string name="more_substitution">Cambio %1$s</string>
+    <string name="more_added_time">Tiempo añadido</string>
+    <string name="picker_no_number">Sin dorsal</string>
+    <string name="picker_number">Dorsal %1$d</string>
+    <string name="picker_player">%1$d · %2$s</string>
+    <string name="picker_title">%1$s · %2$s</string>
+    <string name="picker_sub_out">Sale · %1$s</string>
+    <string name="picker_sub_in">Entra · %1$s (sale %2$d)</string>
+    <string name="added_title">Minutos añadidos</string>
+    <string name="added_minutes">+%1$d min</string>
+    <string name="undo_title">Deshacer</string>
+    <string name="undo_question">¿Deshacer %1$s?</string>
+    <string name="undo_question_team">¿Deshacer %1$s de %2$s?</string>
+    <string name="undo_question_team_number">¿Deshacer %1$s de %2$s, %3$d?</string>
+    <string name="undo_nothing">No hay nada que deshacer</string>
+    <string name="recorded_rejected">No se guardó: %1$s</string>
+    <string name="rejected_count">%1$d rechazados por el servidor</string>
+    <string name="second_yellow_short">2.ª amarilla</string>
+    <string name="red_cards">Expulsados: %1$s</string>
+
+    <!-- Nombres de eventos (también en «¿Deshacer …?») -->
+    <string name="ev_goal">gol</string>
+    <string name="ev_own_goal">autogol</string>
+    <string name="ev_yellow_card">amarilla</string>
+    <string name="ev_red_card">roja</string>
+    <string name="ev_substitution">cambio</string>
+    <string name="ev_note">nota</string>
+    <string name="ev_period_start">inicio del tiempo</string>
+    <string name="ev_period_pause">pausa</string>
+    <string name="ev_period_resume">reanudación</string>
+    <string name="ev_period_end">fin del tiempo</string>
+    <string name="ev_added_time">tiempo añadido</string>
+    <string name="ev_match_end">fin del partido</string>
+    <string name="ev_void">deshacer</string>
 </resources>

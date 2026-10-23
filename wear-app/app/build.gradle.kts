@@ -2,6 +2,12 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+}
+
+ksp {
+    // Room schema history, committed (the CI fails if a build changes it without a commit)
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
@@ -74,6 +80,11 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+
+    // Local matches, events and the send queue
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     // Settings and the encrypted deviceKey
     implementation("androidx.datastore:datastore-preferences:1.2.1")

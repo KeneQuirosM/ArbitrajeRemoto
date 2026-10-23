@@ -8,6 +8,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import app.arbitrajeremoto.reloj.api.ApiClient
 import app.arbitrajeremoto.reloj.api.UrlConnectionTransport
 import app.arbitrajeremoto.reloj.data.DeviceKeyRepository
+import app.arbitrajeremoto.reloj.data.MatchRepository
+import app.arbitrajeremoto.reloj.data.db.RelojDatabase
+import app.arbitrajeremoto.reloj.domain.EventClock
+import app.arbitrajeremoto.reloj.ui.Haptics
 import app.arbitrajeremoto.reloj.data.SettingsRepository
 import app.arbitrajeremoto.reloj.security.AesGcmCipher
 import app.arbitrajeremoto.reloj.security.AndroidKeystoreKey
@@ -33,6 +37,11 @@ class AppContainer(context: Context) {
 
     val api = ApiClient({ baseUrl }, UrlConnectionTransport(), { deviceKeys.cachedKey() })
 
+    val database: RelojDatabase = RelojDatabase.builder(appContext).build()
+    val eventClock = EventClock()
+    val matches = MatchRepository(database.dao(), eventClock, deviceId = { settings.deviceId() })
+    val haptics = Haptics(appContext)
+
     val deviceName: String = Build.MODEL.orEmpty().take(40).ifBlank { "Wear OS" }
 
     val allowHttp: Boolean = BuildConfig.ALLOW_HTTP
@@ -42,8 +51,11 @@ class AppContainer(context: Context) {
         if (state is app.arbitrajeremoto.reloj.pairing.PairingState.Paired) onKeyAvailable()
     }
 
-    /** Overridden by later blocks (sync); nothing to do yet. */
+    /** Starts sending once a key is available (wired in R3). */
     fun onKeyAvailable() {}
+
+    /** A local event or match was stored: send it as soon as possible (wired in R3). */
+    fun onLocalChange() {}
 
     /** Loads the base URL and the key before any API call (the settings flow may not have emitted yet). */
     suspend fun prepareApi(): Boolean {
