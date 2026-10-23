@@ -15,5 +15,5 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["types", "core", "server", "api", "netlify", "scripts", "test", "web/src", "web/vite.config.ts", "e2e", "vitest.config.ts", "playwright.config.ts"]
+  "include": ["types", "core", "server", "api", "scripts", "test", "web/src", "web/vite.config.ts", "e2e", "vitest.config.ts", "playwright.config.ts"]
 }

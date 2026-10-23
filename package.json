@@ -23,13 +23,11 @@
     "db:migrate": "node scripts/migrate.ts"
   },
   "dependencies": {
-    "@netlify/blobs": "^11.1.6",
     "idb": "^8.0.4",
     "postgres": "^3.4.9",
     "preact": "^10.29.8"
   },
   "devDependencies": {
-    "@netlify/functions": "^6.0.3",
     "@playwright/test": "^1.56.1",
     "@types/node": "^22.20.5",
     "fake-indexeddb": "^6.2.6",

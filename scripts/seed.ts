@@ -1,4 +1,4 @@
-// Loads demo data through the public API (works locally and on Netlify).
+// Loads demo data through the public API (works locally and on Vercel).
 // Usage: BASE=http://localhost:8787/api/v1 PASSPHRASE='...' npm run seed
 // Fixed ids: running it again skips the matches that already exist.
 

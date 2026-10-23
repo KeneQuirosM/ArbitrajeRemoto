@@ -1,4 +1,4 @@
-// Local server for development, the curl examples and the end-to-end tests (no Netlify account needed).
+// Local server for development, the curl examples and the end-to-end tests (no Vercel or Supabase account needed).
 // Serves the API at /api/v1 and the built web app (web/dist, after `npm run build`) everywhere else.
 // Usage: npm run dev:api   (reads .env if present)
 // Storage: DEV_STORE=file (default, .data/store.json), memory, or postgres (uses DATABASE_URL,

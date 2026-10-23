@@ -3,7 +3,7 @@
 #
 #   Local:      npm run dev:api            (in another terminal)
 #               PASSPHRASE='tu frase' bash examples/curl.sh
-#   Production: BASE=https://<tu-sitio>.netlify.app/api/v1 PASSPHRASE='tu frase' bash examples/curl.sh
+#   Production: BASE=https://<tu-proyecto>.vercel.app/api/v1 PASSPHRASE='tu frase' bash examples/curl.sh
 #               (creates test data: "Halcones vs Toros" and a paired test device that is revoked at the end)
 #
 # Needs: bash, curl, jq. Each step checks the HTTP status and stops on the first surprise.

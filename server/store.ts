@@ -1,9 +1,9 @@
 // Key-value storage with optimistic concurrency (ETags).
-// Production uses Netlify Blobs; tests use MemoryStore; the local dev server uses FileStore.
+// Production uses PostgresStore (server/pgstore.ts, Supabase); tests use MemoryStore
+// (and PostgresStore with TEST_STORE=postgres); the local dev server uses FileStore by default.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { Store as BlobStore } from '@netlify/blobs';
 
 export interface Doc<T> {
   data: T;
@@ -106,38 +106,5 @@ export class FileStore extends MemoryStore {
   protected override persist(): void {
     mkdirSync(dirname(this.path), { recursive: true });
     writeFileSync(this.path, JSON.stringify(Object.fromEntries(this.data)));
-  }
-}
-
-export class BlobsStore implements KVStore {
-  private readonly blobs: BlobStore;
-
-  constructor(blobs: BlobStore) {
-    this.blobs = blobs;
-  }
-
-  async get<T>(key: string): Promise<Doc<T> | null> {
-    const result = await this.blobs.getWithMetadata(key, { type: 'json' });
-    if (!result) return null;
-    return { data: result.data as T, etag: result.etag ?? '' };
-  }
-
-  async set(key: string, value: unknown, options: WriteOptions = {}): Promise<boolean> {
-    const conditions = options.onlyIfNew
-      ? { onlyIfNew: true as const }
-      : options.onlyIfMatch
-        ? { onlyIfMatch: options.onlyIfMatch }
-        : {};
-    const result = await this.blobs.setJSON(key, value, conditions);
-    return result.modified;
-  }
-
-  async delete(key: string): Promise<void> {
-    await this.blobs.delete(key);
-  }
-
-  async list(prefix: string): Promise<string[]> {
-    const { blobs } = await this.blobs.list({ prefix });
-    return blobs.map((b) => b.key).sort();
   }
 }

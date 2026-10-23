@@ -1,5 +1,4 @@
 node_modules/
-.netlify/
 .data/
 dist/
 coverage/

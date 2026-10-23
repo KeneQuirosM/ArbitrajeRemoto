@@ -1,5 +1,5 @@
 // API v1 router. Framework-free: takes a Fetch API Request and returns a Response,
-// so the same code runs in Netlify Functions, the local dev server and the tests.
+// so the same code runs in Vercel Functions, the local dev server and the tests.
 
 import type { Ctx, Deps } from './context.ts';
 import { ApiError, notFound } from './errors.ts';
