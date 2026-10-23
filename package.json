@@ -1,0 +1,38 @@
+{
+  "name": "arbitrajeremoto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ArbitrajeRemoto: football referee match log (web + API v1)",
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev:api": "node scripts/dev-server.ts",
+    "hash-passphrase": "node scripts/hash-passphrase.ts",
+    "gen-secret": "node -e \"console.log(require('node:crypto').randomBytes(32).toString('base64url'))\"",
+    "seed": "node scripts/seed.ts",
+    "smoke": "bash examples/curl.sh",
+    "dev:web": "vite --config web/vite.config.ts",
+    "build": "vite build --config web/vite.config.ts",
+    "preview": "vite preview --config web/vite.config.ts",
+    "test:e2e": "npm run build && playwright test",
+    "db:migrate": "node scripts/migrate.ts"
+  },
+  "dependencies": {
+    "idb": "^8.0.4",
+    "postgres": "^3.4.9",
+    "preact": "^10.29.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.20.5",
+    "fake-indexeddb": "^6.2.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}
