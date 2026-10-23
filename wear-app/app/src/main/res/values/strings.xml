@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ArbitrajeRemoto Reloj</string>
+
+    <!-- Pairing -->
+    <string name="pair_title">Pair</string>
+    <string name="pair_requesting">Asking for a code…</string>
+    <string name="pair_instructions">Type it on the web: Settings → Watches</string>
+    <string name="pair_code_description">Code %1$s</string>
+    <string name="pair_expires_in">Expires in %1$s</string>
+    <string name="pair_waiting">Waiting for approval…</string>
+    <string name="pair_no_network">No connection. Retrying…</string>
+    <string name="pair_saving">Saving the key…</string>
+    <string name="pair_done">Paired ✓</string>
+    <string name="pair_expired">The code expired</string>
+    <string name="pair_used">The code was already used</string>
+    <string name="pair_unknown">The code is no longer valid</string>
+    <string name="pair_rate_limited">Too many codes. Wait %1$s</string>
+    <string name="pair_failed">Could not pair (%1$s)</string>
+    <string name="pair_new_code">Ask for another code</string>
+    <string name="pair_revoked">Watch unpaired. Pair it again</string>
+    <string name="pair_continue">Continue</string>
+
+    <!-- Home -->
+    <string name="home_settings">Settings</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_server_default">Default server</string>
+    <string name="settings_server_adb">Local (adb reverse)</string>
+    <string name="settings_server_emulator">Local (emulator)</string>
+    <string name="settings_server_adb_hint">Other URL (debug): adb shell am start -n app.arbitrajeremoto.reloj/.ui.MainActivity --es server_url URL</string>
+    <string name="settings_device_id">Watch id</string>
+    <string name="settings_pair_again">Pair again</string>
+    <string name="settings_version">Version %1$s</string>
+</resources>

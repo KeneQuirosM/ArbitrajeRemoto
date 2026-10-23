@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ArbitrajeRemoto Reloj</string>
+
+    <!-- Vinculación -->
+    <string name="pair_title">Vincular</string>
+    <string name="pair_requesting">Pidiendo un código…</string>
+    <string name="pair_instructions">Escríbelo en la web: Ajustes → Relojes</string>
+    <string name="pair_code_description">Código %1$s</string>
+    <string name="pair_expires_in">Caduca en %1$s</string>
+    <string name="pair_waiting">Esperando la aprobación…</string>
+    <string name="pair_no_network">Sin conexión. Reintentando…</string>
+    <string name="pair_saving">Guardando la clave…</string>
+    <string name="pair_done">Vinculado ✓</string>
+    <string name="pair_expired">El código caducó</string>
+    <string name="pair_used">El código ya se usó</string>
+    <string name="pair_unknown">El código ya no es válido</string>
+    <string name="pair_rate_limited">Demasiados códigos. Espera %1$s</string>
+    <string name="pair_failed">No se pudo vincular (%1$s)</string>
+    <string name="pair_new_code">Pedir otro código</string>
+    <string name="pair_revoked">Reloj desvinculado. Vuelve a vincularlo</string>
+    <string name="pair_continue">Continuar</string>
+
+    <!-- Inicio -->
+    <string name="home_settings">Ajustes</string>
+
+    <!-- Ajustes -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_server">Servidor</string>
+    <string name="settings_server_default">Servidor predeterminado</string>
+    <string name="settings_server_adb">Local (adb reverse)</string>
+    <string name="settings_server_emulator">Local (emulador)</string>
+    <string name="settings_server_adb_hint">Otra URL (debug): adb shell am start -n app.arbitrajeremoto.reloj/.ui.MainActivity --es server_url URL</string>
+    <string name="settings_device_id">Id del reloj</string>
+    <string name="settings_pair_again">Vincular de nuevo</string>
+    <string name="settings_version">Versión %1$s</string>
+</resources>

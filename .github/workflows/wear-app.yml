@@ -1,0 +1,82 @@
+name: Wear app
+
+on:
+  push:
+    branches:
+      - claude/reloj-wear
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wear-app-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: wear-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # The action's default list includes the removed 'tools' package
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
+
+      - name: Set up Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK and run unit tests
+        id: build
+        run: ./gradlew assembleDebug testDebugUnitTest --stacktrace
+
+      - name: Show APK signing certificate
+        # Must match keystore/README.md: same key on every build = installs over the previous APK
+        if: ${{ always() && hashFiles('wear-app/app/build/outputs/apk/debug/app-debug.apk') != '' }}
+        run: $ANDROID_HOME/build-tools/35.0.0/apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -i "SHA-256"
+
+      - name: Test summary
+        if: ${{ always() }}
+        run: |
+          shopt -s nullglob
+          total=0; failed=0
+          for f in app/build/test-results/testDebugUnitTest/*.xml core/build/test-results/test/*.xml; do
+            line=$(grep -o '<testsuite [^>]*' "$f" | head -1)
+            name=$(echo "$line" | grep -oE 'name="[^"]*"' | head -1)
+            tests=$(echo "$line" | grep -oE 'tests="[0-9]+"' | grep -oE '[0-9]+')
+            fails=$(echo "$line" | grep -oE '(failures|errors)="[0-9]+"' | grep -oE '[0-9]+' | awk '{s+=$1} END {print s+0}')
+            echo "$name tests=$tests failed=$fails"
+            total=$((total + tests)); failed=$((failed + fails))
+          done
+          echo "TOTAL tests=$total failed=$failed" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload debug APK
+        if: ${{ always() && hashFiles('wear-app/app/build/outputs/apk/debug/app-debug.apk') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: arbitraje-reloj-debug-apk
+          path: wear-app/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wear-unit-test-reports
+          path: |
+            wear-app/app/build/reports/tests/
+            wear-app/core/build/reports/tests/
+          if-no-files-found: ignore
