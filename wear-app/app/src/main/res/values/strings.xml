@@ -105,4 +105,12 @@
     <string name="ev_added_time">added time</string>
     <string name="ev_match_end">end of match</string>
     <string name="ev_void">undo</string>
+    <!-- Sync -->
+    <string name="sync_all_sent">All sent</string>
+    <string name="sync_pending">%1$d pending</string>
+    <string name="sync_offline">No network, %1$d pending</string>
+    <string name="server_state">Server: %1$d – %2$d · %3$s</string>
+    <string name="create_conflict">This match id exists with other data on the server (ID_CONFLICT)</string>
+    <string name="create_deleted">Deleted on the web: not sent any more</string>
+    <string name="create_rejected">The server did not accept this match (%1$s)</string>
 </resources>

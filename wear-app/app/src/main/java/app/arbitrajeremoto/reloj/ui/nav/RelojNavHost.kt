@@ -107,10 +107,11 @@ fun RelojNavHost(viewModel: MainViewModel) {
             }
             composable(Routes.MATCH) { entry ->
                 val id = entry.arguments?.getString("id").orEmpty()
+                val online by viewModel.online.collectAsState()
                 MatchScreen(
                     viewModel = matchViewModel,
                     matchId = id,
-                    syncDot = { null },
+                    online = online,
                     onPick = { type, team -> navController.navigate(Routes.pick(id, type, team)) },
                     onMore = { navController.navigate(Routes.more(id)) },
                     onClockRare = { navController.navigate(Routes.clock(id)) },

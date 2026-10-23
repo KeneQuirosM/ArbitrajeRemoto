@@ -46,6 +46,14 @@ import kotlinx.coroutines.delay
 /** Send status dot (guide §10): green = all sent, amber = N pending, grey = no network. */
 data class SyncDot(val color: Color, val description: String)
 
+/** Grey without network, amber with N pending, green when everything was sent. */
+@Composable
+fun syncDot(pending: Int, online: Boolean): SyncDot = when {
+    !online -> SyncDot(RelojColors.offline, stringResource(R.string.sync_offline, pending))
+    pending > 0 -> SyncDot(RelojColors.pending, stringResource(R.string.sync_pending, pending))
+    else -> SyncDot(RelojColors.synced, stringResource(R.string.sync_all_sent))
+}
+
 /** Ticks once a second; the clock itself is always recomputed from the events. */
 @Composable
 fun rememberNow(): Long {
@@ -63,7 +71,7 @@ fun rememberNow(): Long {
 fun MatchScreen(
     viewModel: MatchViewModel,
     matchId: String,
-    syncDot: (MatchView) -> SyncDot?,
+    online: Boolean,
     onPick: (type: String, team: TeamSide) -> Unit,
     onMore: () -> Unit,
     onClockRare: () -> Unit,
@@ -84,7 +92,7 @@ fun MatchScreen(
     }
 
     RelojList {
-        item { Scoreboard(current, now, syncDot(current)) }
+        item { Scoreboard(current, now, syncDot(current.pendingCount, online)) }
         item { ClockButton(current, { viewModel.record(matchId, it.toDraft()) }, onClockRare) }
         for (side in TeamSide.entries) {
             item { TeamActions(current, side, onPick) }
@@ -108,6 +116,14 @@ fun MatchScreen(
             }
         }
         error?.let { reason -> item { BodyText(stringResource(R.string.recorded_rejected, reason), color = RelojColors.error) } }
+        if (current.match.createState != app.arbitrajeremoto.reloj.data.db.CreateState.PENDING &&
+            current.match.createState != app.arbitrajeremoto.reloj.data.db.CreateState.CREATED
+        ) {
+            item { createProblem(current)?.let { BodyText(it, color = RelojColors.error) } }
+        }
+        if (current.match.serverStateJson != null) {
+            item { serverLine(current)?.let { BodyText(it, color = RelojColors.textMuted) } }
+        }
         if (current.rejectedCount > 0) {
             item { BodyText(stringResource(R.string.rejected_count, current.rejectedCount), color = RelojColors.error) }
         }
@@ -231,4 +247,24 @@ private fun TeamActions(view: MatchView, side: TeamSide, onPick: (String, TeamSi
                 description = stringResource(R.string.action_for_team, red, team), fontSize = RelojType.caption)
         }
     }
+}
+
+/** Problems of `POST /matches` (409 / 410 / rejected), recorded on the match. */
+@Composable
+private fun createProblem(view: MatchView): String? = when (view.match.createState) {
+    app.arbitrajeremoto.reloj.data.db.CreateState.CONFLICT -> stringResource(R.string.create_conflict)
+    app.arbitrajeremoto.reloj.data.db.CreateState.DELETED -> stringResource(R.string.create_deleted)
+    app.arbitrajeremoto.reloj.data.db.CreateState.REJECTED -> stringResource(R.string.create_rejected, view.match.createError.orEmpty())
+    else -> null
+}
+
+/** Last `state`/`serverTime` returned by the server: shown only, never used for the clock (guide §8). */
+@Composable
+private fun serverLine(view: MatchView): String? {
+    val json = view.match.serverStateJson ?: return null
+    val state = remember(json) {
+        runCatching { app.arbitrajeremoto.reloj.api.ApiJson.decodeFromString(app.arbitrajeremoto.reloj.api.CompactStateDto.serializer(), json) }.getOrNull()
+    } ?: return null
+    val time = view.match.serverTime?.substringAfter('T')?.take(8).orEmpty()
+    return stringResource(R.string.server_state, state.score.home, state.score.away, time)
 }

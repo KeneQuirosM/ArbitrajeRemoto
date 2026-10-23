@@ -10,6 +10,7 @@ class RelojApp : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        container.network.start()
         container.appScope.launch {
             container.settings.settings.collect { container.baseUrl = it.serverUrl }
         }

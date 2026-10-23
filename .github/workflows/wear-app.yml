@@ -46,8 +46,8 @@ jobs:
         # The exported schema (app/schemas) is the history migrations are written against
         run: |
           if [ -z "$(git ls-files app/schemas)" ]; then
-            echo "::warning::Room schema not committed yet. Generated:"
-            find app/schemas -name '*.json' -print -exec cat {} \;
+            echo "::warning::Room schema not committed yet. Generated (tar.gz, base64, one line):"
+            tar -czf - app/schemas | base64 -w0; echo
           else
             git status --porcelain app/schemas
             test -z "$(git status --porcelain app/schemas)" || { echo "::error::Room schema changed: commit app/schemas"; git diff app/schemas; exit 1; }

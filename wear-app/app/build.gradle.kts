@@ -86,6 +86,10 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    // Background sending of the queue (CONNECTED constraint). 2.10.0: the stable line that still
+    // depends on Room 2.6.1 (2.11 moves to Room 2.7 and would upgrade ours) and on lifecycle 2.6+
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+
     // Settings and the encrypted deviceKey
     implementation("androidx.datastore:datastore-preferences:1.2.1")
 

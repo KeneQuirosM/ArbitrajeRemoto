@@ -33,7 +33,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val settings: StateFlow<AppSettings?> =
         container.settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    val online: StateFlow<Boolean> = container.network.online
+
     init {
+        // A 401 during sync marks the key revoked: go back to pairing, keep everything else (guide §4.4)
+        viewModelScope.launch {
+            container.settings.settings.collect { s ->
+                if (s.keyRevoked && _start.value == StartDestination.Home) _start.value = StartDestination.Pair(revoked = true)
+            }
+        }
         viewModelScope.launch {
             val hasKey = container.prepareApi()
             val s = container.settings.current()

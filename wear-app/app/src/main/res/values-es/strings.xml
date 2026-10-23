@@ -105,4 +105,12 @@
     <string name="ev_added_time">tiempo añadido</string>
     <string name="ev_match_end">fin del partido</string>
     <string name="ev_void">deshacer</string>
+    <!-- Sincronización -->
+    <string name="sync_all_sent">Todo enviado</string>
+    <string name="sync_pending">%1$d pendientes</string>
+    <string name="sync_offline">Sin red, %1$d pendientes</string>
+    <string name="server_state">Servidor: %1$d – %2$d · %3$s</string>
+    <string name="create_conflict">Ese id de partido existe con otros datos en el servidor (ID_CONFLICT)</string>
+    <string name="create_deleted">Borrado en la web: ya no se envía</string>
+    <string name="create_rejected">El servidor no aceptó este partido (%1$s)</string>
 </resources>
