@@ -23,6 +23,14 @@ async function login(page: Page) {
   await page.getByLabel('Frase de acceso').fill(E2E_PASSPHRASE);
   await page.getByRole('button', { name: 'Iniciar sesión' }).click();
   await expect(page.getByText('Sesión iniciada')).toBeVisible();
+  // Let the sync started by the login finish: a full page load in the middle would cut its
+  // request, which WebKit reports as a page error.
+  await expect(page.locator('.sync-badge')).toHaveText('Sincronizado', { timeout: 15_000 });
+}
+
+/** In-app navigation (hash change, no page reload), like a user tapping the tab bar. */
+async function openTab(page: Page, name: 'Partidos' | 'Ajustes') {
+  await page.locator('.tabbar').getByRole('link', { name }).click();
 }
 
 async function recordPlayerEvent(page: Page, panel: 'home' | 'away', button: string, number: string) {
@@ -68,7 +76,7 @@ test('the app reopens offline from its cache and keeps the recorded data', async
 
 test('quick match without connection syncs once, without duplicates, when the connection returns', async ({ page, context }) => {
   await login(page);
-  await page.goto('/');
+  await openTab(page, 'Partidos');
   const matchId = await offlineQuickMatch(page, context);
 
   await context.setOffline(false);
@@ -86,7 +94,7 @@ test('quick match without connection syncs once, without duplicates, when the co
   expect(remote.state.score).toEqual({ home: 1, away: 0 });
 
   // Forcing more syncs changes nothing.
-  await page.goto('/#/ajustes');
+  await openTab(page, 'Ajustes');
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(page.locator('.sync-badge')).toHaveText('Sincronizado');
