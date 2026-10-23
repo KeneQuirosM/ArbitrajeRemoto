@@ -91,3 +91,62 @@ jobs:
             wear-app/app/build/reports/tests/
             wear-app/core/build/reports/tests/
           if-no-files-found: ignore
+
+  contract:
+    # Block R3: the watch's Kotlin code (client, pairing, sync, domain) against this repo's real API
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CONTRACT_BASE_URL: http://localhost:8787/api/v1
+      CONTRACT_PASSPHRASE: contract passphrase for the watch app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        # Gradle configures :app too, which needs the SDK even when only :contract runs
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;35.0.0'
+
+      - name: Set up Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v4
+
+      - run: npm ci
+
+      - name: Start the API (npm run dev:api, .env from .env.example with generated secrets)
+        run: |
+          HASH="$(printf '%s' "$CONTRACT_PASSPHRASE" | node scripts/hash-passphrase.ts)"
+          SECRET="$(npm run --silent gen-secret)"
+          { grep -vE '^(ADMIN_PASSPHRASE_HASH|SESSION_SECRET)=' .env.example
+            echo "ADMIN_PASSPHRASE_HASH='$HASH'"
+            echo "SESSION_SECRET=$SECRET"; } > .env
+          nohup npm run dev:api > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf "$CONTRACT_BASE_URL/health" && break; sleep 1; done
+          curl -sf "$CONTRACT_BASE_URL/health"
+
+      - name: Contract tests
+        working-directory: wear-app
+        run: ./gradlew :contract:test --stacktrace
+
+      - name: API log
+        if: ${{ always() }}
+        run: cat api.log || true
+
+      - name: Upload contract test report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wear-contract-test-report
+          path: wear-app/contract/build/reports/tests/
+          if-no-files-found: ignore
