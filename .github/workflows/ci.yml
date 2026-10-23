@@ -40,13 +40,14 @@ jobs:
         env:
           TEST_STORE: postgres
       - run: npm run build
-      - name: Smoke test (curl examples against the local API on Postgres)
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/smoke
+      - name: Smoke test (curl examples against the local API on Postgres, as the restricted API role)
         run: |
           psql postgresql://postgres:postgres@localhost:5432/postgres -c 'create database smoke'
+          export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/smoke
           npm run db:migrate
           npm run db:migrate
+          psql "$DATABASE_URL" -c "alter role arbitraje_app with login password 'smoke-app-password'"
+          export DATABASE_URL=postgresql://arbitraje_app:smoke-app-password@localhost:5432/smoke
           export ADMIN_PASSPHRASE_HASH="$(printf '%s' 'ci passphrase for smoke tests' | node scripts/hash-passphrase.ts)"
           export SESSION_SECRET="$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))")"
           DEV_STORE=postgres node scripts/dev-server.ts &

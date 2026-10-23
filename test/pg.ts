@@ -9,16 +9,31 @@ import { PostgresStore } from '../server/pgstore.ts';
 
 export const PG_URL = process.env.TEST_DATABASE_URL;
 export const TEMPLATE_DB = 'arb_test_template';
+/** Test-only password for the API role (production sets its own in Supabase). */
+export const APP_ROLE_PASSWORD = 'arbitraje-app-test-password';
 
+/** Admin (migration owner) URL for a database. */
 export function databaseUrl(name: string): string {
   const url = new URL(PG_URL!);
   url.pathname = `/${name}`;
   return url.toString();
 }
 
+/** URL for the restricted API role, as production uses it. */
+export function appRoleUrl(name: string): string {
+  const url = new URL(databaseUrl(name));
+  url.username = 'arbitraje_app';
+  url.password = APP_ROLE_PASSWORD;
+  return url.toString();
+}
+
 const open: Sql[] = [];
 
-export async function freshDatabase(): Promise<{ url: string; sql: Sql }> {
+/**
+ * A new migrated database. `sql` connects as the restricted API role `arbitraje_app`
+ * (like production); `admin` connects as the owner, for assertions and setup.
+ */
+export async function freshDatabase(): Promise<{ url: string; sql: Sql; admin: Sql }> {
   const name = `arb_t_${randomBytes(6).toString('hex')}`;
   const admin = createSql(PG_URL!);
   try {
@@ -26,10 +41,11 @@ export async function freshDatabase(): Promise<{ url: string; sql: Sql }> {
   } finally {
     await admin.end();
   }
-  const url = databaseUrl(name);
+  const url = appRoleUrl(name);
   const sql = createSql(url);
-  open.push(sql);
-  return { url, sql };
+  const owner = createSql(databaseUrl(name));
+  open.push(sql, owner);
+  return { url, sql, admin: owner };
 }
 
 export async function closeAll(): Promise<void> {

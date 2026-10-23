@@ -3,7 +3,7 @@
 
 import { migrate } from '../scripts/migrate.ts';
 import { createSql } from '../server/db.ts';
-import { PG_URL, TEMPLATE_DB, databaseUrl } from './pg.ts';
+import { APP_ROLE_PASSWORD, PG_URL, TEMPLATE_DB, databaseUrl } from './pg.ts';
 
 async function dropTestDatabases(): Promise<void> {
   const admin = createSql(PG_URL!);
@@ -26,6 +26,13 @@ export async function setup(): Promise<void> {
     await admin.end();
   }
   await migrate(databaseUrl(TEMPLATE_DB), () => {});
+  // The step docs/DESPLIEGUE.md asks the owner to do by hand in Supabase.
+  const template = createSql(databaseUrl(TEMPLATE_DB));
+  try {
+    await template.unsafe(`alter role arbitraje_app with login password '${APP_ROLE_PASSWORD}'`);
+  } finally {
+    await template.end();
+  }
 }
 
 export async function teardown(): Promise<void> {

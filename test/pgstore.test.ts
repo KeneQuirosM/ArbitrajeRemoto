@@ -13,7 +13,9 @@ import { PG_URL, freshDatabase } from './pg.ts';
 import { createApp } from '../server/app.ts';
 import { hashPassphrase } from '../server/crypto.ts';
 
-const MIGRATION = readFileSync(new URL('../supabase/migrations/20261023120000_init.sql', import.meta.url), 'utf8');
+const MIGRATIONS = ['20261023120000_init.sql', '20261023130000_app_role.sql'].map((f) =>
+  readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), 'utf8'),
+);
 
 function storeContract(name: string, makeStore: () => Promise<KVStore>) {
   describe(`KV contract: ${name}`, () => {
@@ -171,19 +173,38 @@ describe.skipIf(!PG_URL)('Postgres', () => {
     expect((await api.call('GET', '/health', undefined, { auth: 'none' })).status).toBe(200);
   });
 
-  it('enables RLS on every table, with no policies', async () => {
+  it('enables RLS on every table; the only policies are for the API role', async () => {
     const tables = await sql<{ relname: string; relrowsecurity: boolean }[]>`
       select relname, relrowsecurity from pg_class where relnamespace = 'arbitraje'::regnamespace and relkind = 'r'`;
     expect(tables.map((t) => t.relname).sort()).toEqual(
       ['devices', 'events', 'matches', 'meta', 'pairing_codes', 'rate_limits', 'schema_migrations', 'teams'],
     );
     expect(tables.every((t) => t.relrowsecurity)).toBe(true);
-    expect((await sql`select 1 from pg_policies where schemaname = 'arbitraje'`).length).toBe(0);
+    const policies = await sql<{ tablename: string; roles: string[] }[]>`
+      select tablename, roles::text[] as roles from pg_policies where schemaname = 'arbitraje' order by tablename`;
+    expect(policies.map((p) => p.tablename)).toEqual(['devices', 'events', 'matches', 'meta', 'pairing_codes', 'rate_limits', 'teams']);
+    expect(policies.every((p) => p.roles.length === 1 && p.roles[0] === 'arbitraje_app')).toBe(true);
+  });
+
+  it('the API role cannot see or change anything outside its own tables (shared project)', async () => {
+    const { sql: app, admin } = await freshDatabase();
+    // Simulate the other app living in the same Supabase project.
+    await admin.unsafe(`
+      create table public.other_app_secrets (id int primary key, secret text);
+      insert into public.other_app_secrets values (1, 'not for ArbitrajeRemoto');`);
+    await expect(app`select * from public.other_app_secrets`).rejects.toThrow(/permission denied/);
+    await expect(app.unsafe('create table public.intruder (id int)')).rejects.toThrow(/permission denied/);
+    await expect(app.unsafe('create table arbitraje.intruder (id int)')).rejects.toThrow(/permission denied/);
+    await expect(app.unsafe('drop table arbitraje.events')).rejects.toThrow(/must be owner|permission denied/);
+    await expect(app.unsafe('alter table arbitraje.matches disable row level security')).rejects.toThrow(/must be owner|permission denied/);
+    await expect(app`select * from arbitraje.schema_migrations`).rejects.toThrow(/permission denied/);
+    // Its own tables work.
+    expect(await app`select count(*)::int as n from arbitraje.matches`).toEqual([{ n: 0 }]);
   });
 
   it('removes any access for the Supabase API roles and can be re-applied', async () => {
-    const { sql: db } = await freshDatabase();
-    // Simulate Supabase's default grants for the API roles, then apply the migration again.
+    const { admin: db } = await freshDatabase();
+    // Simulate Supabase's default grants for the API roles, then apply the migrations again.
     await db.unsafe(`
       do $$ begin
         if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
@@ -191,7 +212,7 @@ describe.skipIf(!PG_URL)('Postgres', () => {
       end $$;
       grant usage on schema arbitraje to anon, authenticated;
       grant all on all tables in schema arbitraje to anon, authenticated;`);
-    await db.unsafe(MIGRATION);
+    for (const migration of MIGRATIONS) await db.unsafe(migration);
     for (const role of ['anon', 'authenticated']) {
       const [r] = await db<{ select: boolean; insert: boolean; usage: boolean }[]>`
         select has_table_privilege(${role}, 'arbitraje.events', 'select') as select,
@@ -199,6 +220,8 @@ describe.skipIf(!PG_URL)('Postgres', () => {
                has_schema_privilege(${role}, 'arbitraje', 'usage') as usage`;
       expect(r).toEqual({ select: false, insert: false, usage: false });
     }
+    const [app] = await db<{ select: boolean }[]>`select has_table_privilege('arbitraje_app', 'arbitraje.events', 'select') as select`;
+    expect(app!.select).toBe(true);
   });
 
   afterAll(async () => {
