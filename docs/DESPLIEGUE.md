@@ -122,6 +122,36 @@ tienen Row Level Security activado; las únicas políticas son para `arbitraje_a
 
 ---
 
+## 2-bis. Alternativa: la base de datos en Neon
+
+Si en lugar de Supabase usas **Neon** (https://neon.com, también Postgres gratis y sin tarjeta), todo lo de §2.2 y §2.3 vale
+igual: en Neon se hace en **SQL Editor** (menú lateral del proyecto). Cambian solo la región y la cadena de conexión:
+
+1. **Región:** la ves en el panel del proyecto (**Settings → General**, o junto al nombre del proyecto). `AWS US East 1 (N.
+   Virginia)` corresponde a `iad1` en Vercel, la que ya trae `vercel.json`. Si es otra, dímela.
+2. **`DATABASE_URL`:** en el panel del proyecto pulsa **Connect**. En la ventana:
+   - activa **Connection pooling** (el host debe llevar `-pooler`, por ejemplo `ep-algo-123456-pooler.us-east-1.aws.neon.tech`);
+   - copia la cadena. Se parece a:
+     `postgresql://neondb_owner:CONTRASEÑA@ep-algo-123456-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require`
+   - cambia el usuario (`neondb_owner`, o el que salga antes de `:`) por **`arbitraje_app`** (en Neon **sin** `.id-del-proyecto`)
+     y la contraseña por la de §2.3. El resto, igual.
+
+   Resultado: `postgresql://arbitraje_app:TU-CONTRASEÑA@ep-algo-123456-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require`
+
+   (La API quita sola el `channel_binding`, que la librería de Postgres no entiende; puedes dejarlo.)
+3. **Pausas:** Neon no pausa el proyecto como Supabase. La base "se duerme" a los 5 minutos sin uso y despierta sola con la
+   siguiente petición (la primera tarda un poco más). Neon puede borrar proyectos gratuitos **sin actividad durante 90 días**;
+   el cron diario (§3.6) evita que eso pase.
+4. **Por verificar** en tu pantalla: los nombres de botones de Neon; y que el usuario `arbitraje_app` creado por SQL pueda
+   entrar por el pooler (si en los Logs de Vercel aparece `password authentication failed`, prueba la misma cadena quitando
+   `-pooler` del host y dímelo).
+
+Límites del plan gratis de Neon (según https://neon.com/docs/introduction/plans): 100 horas de cómputo al mes por proyecto,
+unos 5 GB de transferencia al mes y 0,5–1 GB de almacenamiento por proyecto (sus páginas no coinciden; **por verificar**).
+ArbitrajeRemoto usa muy poco de todo eso.
+
+---
+
 ## 3. Vercel: publicar la web y la API
 
 ### 3.1 Cuenta
@@ -265,8 +295,9 @@ Anota lo que marcan los paneles (**Vercel → Usage**, **Supabase → Project �
 |---|---|---|
 | `SERVER_MISCONFIGURED` | Falta una variable de entorno | Revisa las 4 del paso 3.3 y redespliega |
 | `/api/v1/...` responde 500 y en Logs pone `password authentication failed` | `DATABASE_URL` con la contraseña mal puesta (o con corchetes) | Vuelve al paso 2.4 |
-| Logs: `Tenant or user not found` | Usuario de la cadena incorrecto | El usuario debe ser `arbitraje_app.<id-del-proyecto>` (§2.4) |
+| Logs: `Tenant or user not found` | Usuario de la cadena incorrecto | Supabase: `arbitraje_app.<id-del-proyecto>` (§2.4); Neon: `arbitraje_app` (§2-bis) |
 | Logs: `password authentication failed for user "arbitraje_app"` | Falta el paso 2.3 o la contraseña no coincide | Repite §2.3 y actualiza `DATABASE_URL` |
 | Logs: `permission denied for schema arbitraje` | Falta la segunda migración | §2.2, punto 3 |
 | Logs: `relation "arbitraje.matches" does not exist` | No se aplicaron las migraciones | §2.2 |
+| Logs: `unrecognized configuration parameter` | Opción de la URL que Postgres no entiende | Quítala de `DATABASE_URL` (todo lo que va tras `?` salvo `sslmode=require`) |
 | El cron devuelve 401 | `CRON_SECRET` no está definido en Vercel | Añádelo y redespliega |
