@@ -48,6 +48,8 @@ export type Route =
   | { name: 'newMatch' }
   | { name: 'match'; id: string }
   | { name: 'editMatch'; id: string }
+  | { name: 'report'; id: string }
+  | { name: 'live'; id: string; token: string }
   | { name: 'teams' }
   | { name: 'newTeam' }
   | { name: 'team'; id: string }
@@ -58,6 +60,8 @@ export function parseRoute(hash: string): Route {
   const parts = path.split('/').filter(Boolean).map(decodeURIComponent);
   if (parts[0] === 'partidos' && parts[1] === 'nuevo') return { name: 'newMatch' };
   if (parts[0] === 'partidos' && parts[1] && parts[2] === 'editar') return { name: 'editMatch', id: parts[1] };
+  if (parts[0] === 'partidos' && parts[1] && parts[2] === 'informe') return { name: 'report', id: parts[1] };
+  if (parts[0] === 'vivo' && parts[1] && parts[2]) return { name: 'live', id: parts[1], token: parts[2] };
   if (parts[0] === 'partidos' && parts[1]) return { name: 'match', id: parts[1] };
   if (parts[0] === 'equipos' && parts[1] === 'nuevo') return { name: 'newTeam' };
   if (parts[0] === 'equipos' && parts[1]) return { name: 'team', id: parts[1] };
@@ -71,6 +75,7 @@ export const href = {
   newMatch: () => '#/partidos/nuevo',
   match: (id: string) => `#/partidos/${encodeURIComponent(id)}`,
   editMatch: (id: string) => `#/partidos/${encodeURIComponent(id)}/editar`,
+  report: (id: string) => `#/partidos/${encodeURIComponent(id)}/informe`,
   teams: () => '#/equipos',
   newTeam: () => '#/equipos/nuevo',
   team: (id: string) => `#/equipos/${encodeURIComponent(id)}`,

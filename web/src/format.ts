@@ -13,7 +13,7 @@ export function periodName(period: number, periods: number): string {
 const teamName = (match: Pick<Match, 'homeTeamName' | 'awayTeamName'>, side: 'home' | 'away' | null) =>
   side === 'home' ? match.homeTeamName : side === 'away' ? match.awayTeamName : '';
 
-export function describeEvent(e: DerivedEvent, match: Match): string {
+export function describeEvent(e: DerivedEvent, match: Pick<Match, 'homeTeamName' | 'awayTeamName' | 'periods'>): string {
   const team = teamName(match, e.team);
   const number = e.playerNumber === null ? '' : ` (${t('event.number', { number: e.playerNumber })})`;
   switch (e.type) {
@@ -54,6 +54,10 @@ export function formatDateTime(iso: string | null): string {
 
 export function formatTime(ms: number): string {
   return new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(ms));
+}
+
+export function formatHourMinute(ms: number): string {
+  return new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(new Date(ms));
 }
 
 /** Value for <input type="datetime-local"> in local time. */

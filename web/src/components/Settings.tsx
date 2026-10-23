@@ -5,6 +5,7 @@ import { useSyncStatus } from '../hooks.ts';
 import { getLang, setLang, t, type Lang } from '../i18n/index.ts';
 import { getDeviceId } from '../repo.ts';
 import { isLoggedIn, login, logout, syncNow } from '../sync.ts';
+import { Watches } from './Watches.tsx';
 
 export function Settings() {
   const status = useSyncStatus();
@@ -95,6 +96,8 @@ export function Settings() {
         <p class="muted">{t('settings.lastSync', { time: status.lastSyncAt ? formatTime(status.lastSyncAt) : t('settings.never') })}</p>
         {status.lastError ? <p class="text-bad">{status.lastError}</p> : null}
       </section>
+
+      {loggedIn ? <Watches /> : null}
 
       <section class="settings-block" aria-labelledby="lang-title">
         <h2 id="lang-title" class="group-title">

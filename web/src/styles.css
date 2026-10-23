@@ -881,6 +881,7 @@ a {
       'clock panels'
       'primary panels'
       'secondary tools'
+      'share share'
       'timeline timeline';
     align-items: start;
   }
@@ -906,7 +907,314 @@ a {
   .board-tools {
     grid-area: tools;
   }
+  .board-share {
+    grid-area: share;
+  }
   .timeline {
     grid-area: timeline;
   }
+
+  /* The spectator page is a single column even on wide screens. */
+  .board.live {
+    display: flex;
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+}
+
+/* --- Share, live view ------------------------------------------------------ */
+
+.board-share {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.share-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.share-actions .btn-danger-quiet {
+  grid-column: 1 / -1;
+}
+
+.content-bare {
+  padding-bottom: 2rem;
+}
+
+.live-head {
+  text-align: center;
+}
+
+.live-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.live-meta {
+  margin: 0.15rem 0 0;
+  color: var(--ink-soft);
+}
+
+.live-status {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-s);
+  text-align: center;
+}
+
+/* --- Watches --------------------------------------------------------------- */
+
+.subgroup-title {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+}
+
+.input-code {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.device-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.device-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+}
+
+.device-row.is-revoked {
+  opacity: 0.7;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.btn-link {
+  align-self: flex-start;
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* --- Report ---------------------------------------------------------------- */
+
+.report-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: var(--tap);
+  font-weight: 600;
+}
+
+.check input {
+  width: 1.4rem;
+  height: 1.4rem;
+  accent-color: var(--pitch);
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+}
+
+.report-header {
+  text-align: center;
+}
+
+.report-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.report-meta {
+  margin: 0.15rem 0 0;
+  color: var(--ink-soft);
+}
+
+.report-warn {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.report-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.report-score span:first-child {
+  text-align: right;
+}
+
+.report-score span:last-child {
+  text-align: left;
+}
+
+.report-score strong {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.report-h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.0625rem;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.report-table th,
+.report-table td {
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  /* Break only words that do not fit at all (long names), never short ones. */
+  overflow-wrap: break-word;
+}
+
+.report-table th {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.report-table .nowrap {
+  white-space: nowrap;
+}
+
+.card-yellow td:nth-child(2),
+.card-secondYellow td:nth-child(2) {
+  box-shadow: inset 0.3rem 0 0 var(--card-yellow);
+}
+
+.card-red td:nth-child(2),
+.card-secondYellow td:nth-child(2) {
+  font-weight: 700;
+}
+
+.card-red td:nth-child(2) {
+  box-shadow: inset 0.3rem 0 0 var(--card-red);
+}
+
+.report-notes {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.report-note-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.report-footer {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* Printing (and "Save as PDF"): only the report, black on white, whatever the screen theme. */
+@media print {
+  :root {
+    --chalk: #fff;
+    --surface: #fff;
+    --ink: #000;
+    --ink-soft: #333;
+    --line: #999;
+    --warn: #000;
+    color-scheme: light;
+  }
+
+  .topbar,
+  .tabbar,
+  .toast-region,
+  .no-print {
+    display: none !important;
+  }
+
+  .content {
+    max-width: none;
+    padding: 0;
+  }
+
+  .report {
+    border: 0;
+    padding: 0;
+  }
+
+  .report-table tr {
+    break-inside: avoid;
+  }
+
+  .report-h2 {
+    break-after: avoid;
+  }
+
+  .card-yellow td:nth-child(2),
+  .card-secondYellow td:nth-child(2),
+  .card-red td:nth-child(2) {
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+.subgroup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.subgroup-head .subgroup-title {
+  margin: 0;
 }

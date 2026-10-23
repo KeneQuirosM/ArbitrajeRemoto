@@ -74,12 +74,25 @@ export function SyncBadge() {
 // --- Layout -------------------------------------------------------------------
 
 const TABS: { route: Route['name'][]; href: string; label: () => string }[] = [
-  { route: ['matches', 'newMatch', 'match', 'editMatch'], href: href.matches(), label: () => t('nav.matches') },
+  { route: ['matches', 'newMatch', 'match', 'editMatch', 'report'], href: href.matches(), label: () => t('nav.matches') },
   { route: ['teams', 'newTeam', 'team'], href: href.teams(), label: () => t('nav.teams') },
   { route: ['settings'], href: href.settings(), label: () => t('nav.settings') },
 ];
 
-export function Layout(props: { route: Route; children: ComponentChildren }) {
+/** `bare`: public pages (live view) show only the name, without sync status or navigation. */
+export function Layout(props: { route: Route; bare?: boolean; children: ComponentChildren }) {
+  if (props.bare) {
+    return (
+      <div class="shell">
+        <header class="topbar">
+          <span class="brand">{t('app.name')}</span>
+        </header>
+        <main class="content content-bare" id="main">
+          {props.children}
+        </main>
+      </div>
+    );
+  }
   return (
     <div class="shell">
       <header class="topbar">

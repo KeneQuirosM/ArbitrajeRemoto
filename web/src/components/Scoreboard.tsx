@@ -10,6 +10,7 @@ import { addEvent, getMatchView, listTeams, resetMatch, type NewEvent } from '..
 import { clockActionEvent, clockActions, newestFirst, sentOff, type ClockAction } from '../scoreboard.ts';
 import { AddedTimeDialog, ConfirmDialog, NoteDialog, PlayerDialog, SubstitutionDialog } from './Dialog.tsx';
 import { toast } from './Layout.tsx';
+import { ShareLiveDialog } from './ShareLive.tsx';
 
 type PlayerAction = 'goal' | 'own_goal' | 'yellow_card' | 'red_card';
 
@@ -21,6 +22,7 @@ type Open =
   | { kind: 'finish' }
   | { kind: 'undo'; event: DerivedEvent }
   | { kind: 'reset' }
+  | { kind: 'share' }
   | null;
 
 const DIALOG_TITLE: Record<PlayerAction, 'dialog.goalTitle' | 'dialog.ownGoalTitle' | 'dialog.yellowTitle' | 'dialog.redTitle'> = {
@@ -197,6 +199,15 @@ export function Scoreboard(props: { id: string }) {
         </button>
       </div>
 
+      <div class="board-share">
+        <button type="button" class="btn" onClick={() => setOpen({ kind: 'share' })}>
+          {t('share.button')}
+        </button>
+        <a class="btn" href={href.report(match.id)}>
+          {t('report.button')}
+        </a>
+      </div>
+
       <section class="timeline" aria-labelledby="timeline-title">
         <h2 id="timeline-title" class="group-title">
           {t('board.timeline')}
@@ -269,6 +280,7 @@ export function Scoreboard(props: { id: string }) {
           }}
         />
       ) : null}
+      {open?.kind === 'share' ? <ShareLiveDialog match={match} onClose={() => setOpen(null)} /> : null}
       {open?.kind === 'reset' ? (
         <ConfirmDialog
           danger

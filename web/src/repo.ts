@@ -116,6 +116,15 @@ export async function deleteMatch(id: string): Promise<void> {
   notifyDataChange();
 }
 
+/** Stores a live token the server just issued (not a local edit: nothing to send). */
+export async function setLiveToken(id: string, liveToken: string): Promise<void> {
+  const db = await getDb();
+  const match = await db.get('matches', id);
+  if (!match) return;
+  await db.put('matches', { ...match, liveToken });
+  notifyDataChange();
+}
+
 // --- Events ---------------------------------------------------------------
 
 export type NewEvent = Omit<EventInput, 'id' | 'clientTimestamp' | 'deviceId' | 'matchId'>;

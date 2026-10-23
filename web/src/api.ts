@@ -59,3 +59,36 @@ export async function api<T = any>(method: string, path: string, body?: unknown)
   }
   return { status: res.status, data };
 }
+
+/**
+ * Conditional GET for polling: sends `If-None-Match` and returns the new ETag.
+ * `data` is null when the server answers 304 (nothing changed).
+ */
+export async function getIfChanged<T = any>(path: string, etag: string | null): Promise<{ status: number; data: T | null; etag: string | null }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetcher(base + path, {
+      method: 'GET',
+      credentials: 'omit',
+      headers: etag ? { 'If-None-Match': etag } : {},
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+  } catch (error) {
+    throw new NetworkError(error instanceof Error ? error.message : 'Network error');
+  } finally {
+    clearTimeout(timer);
+  }
+  if (res.status === 304) return { status: 304, data: null, etag };
+  const text = await res.text();
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    throw new ApiFailure(res.status, 'BAD_RESPONSE', 'The server answered with something that is not JSON');
+  }
+  if (!res.ok) throw new ApiFailure(res.status, data?.error?.code ?? 'HTTP_ERROR', data?.error?.message ?? `HTTP ${res.status}`);
+  return { status: res.status, data, etag: res.headers.get('ETag') };
+}
