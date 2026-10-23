@@ -1,42 +1,41 @@
 # Pruebas manuales
 
-Lo que no puedo probar yo (tu cuenta de Netlify, tu iPhone, tu PC, el reloj). Marca cada casilla y dime qué falla.
+Lo que no puedo probar yo (tus cuentas de Vercel y Supabase, tu iPhone, tu PC, el reloj). Marca cada casilla y dime qué falla.
 
 ## Bloque 1 — API
 
-Requisito: sitio desplegado según `docs/DESPLIEGUE.md`. Sustituye `<sitio>` por tu dominio.
+Requisito: sitio desplegado según `docs/DESPLIEGUE.md`. Sustituye `<proyecto>` por tu subdominio de Vercel.
 
 ### En el iPhone (Safari)
 
-- [ ] Abrir `https://<sitio>.netlify.app/api/v1/health` → texto con `"ok":true` y la hora del servidor.
-- [ ] Abrir `https://<sitio>.netlify.app/api/v1/matches` → `{"error":{"code":"UNAUTHORIZED",...}}` (sin sesión no se ve nada).
-- [ ] Abrir `http://<sitio>.netlify.app/api/v1/health` (con **http**) → Safari termina en **https** (redirección).
+- [ ] Abrir `https://<proyecto>.vercel.app/api/v1/health` → texto con `"ok":true` y la hora del servidor.
+- [ ] Abrir `https://<proyecto>.vercel.app/api/v1/matches` → `{"error":{"code":"UNAUTHORIZED",...}}` (sin sesión no se ve nada).
+- [ ] Abrir `http://<proyecto>.vercel.app/api/v1/health` (con **http**) → Safari termina en **https** (redirección).
 - [ ] Tu web antigua `https://singular-madeleine-7f0bc5.netlify.app/` sigue funcionando igual que antes.
 
 ### En el PC (terminal, con Node 22 y jq instalados)
 
-- [ ] `BASE=https://<sitio>.netlify.app/api/v1 PASSPHRASE='tu frase' bash examples/curl.sh` termina con
+- [ ] `BASE=https://<proyecto>.vercel.app/api/v1 PASSPHRASE='tu frase' bash examples/curl.sh` termina con
       `✓ All examples behaved as documented.`
 - [ ] La misma orden con una frase incorrecta se detiene en el paso 1 con `401`.
 - [ ] Repite la frase incorrecta 6 veces seguidas → la sexta responde `429` (espera 15 min o cambia de red para volver a entrar).
 - [ ] `BASE=... PASSPHRASE='...' npm run seed` muestra la tabla con 3 partidos (`finished 2-1`, `live 1-1`, `scheduled 0-0`).
 - [ ] Ejecutar el seed una segunda vez no crea partidos repetidos.
-- [ ] En Netlify → **Logs → Functions → api**: no hay errores rojos tras las pruebas.
-- [ ] En Netlify → **Usage**: anota cuántos créditos se gastaron con estas pruebas y dímelo.
+- [ ] En Vercel → el proyecto → **Logs**: no hay errores (rojo) tras las pruebas.
+- [ ] Anota el consumo en la tabla de `docs/DESPLIEGUE.md` §4 y dímelo.
 
 ### Por verificar (dependen de tu cuenta)
 
-- [ ] El plan Free no pide tarjeta para Functions y Blobs.
-- [ ] Netlify Blobs funciona sin configuración extra en el sitio nuevo (el seed lo demuestra).
-- [ ] La función se despliega con Node 22 (si los logs muestran otro error de versión, avísame).
+- [ ] Ni Vercel Hobby ni Supabase Free piden tarjeta.
+- [ ] La función se despliega con Node 22 (Vercel → Deployments → el último → **Functions**).
 
 ## Bloque 2 — Web nueva y modo sin conexión
 
-Requisito: el despliegue de `main` con el Bloque 2. Usa Safari en el iPhone salvo que se diga otra cosa.
+Requisito: el despliegue de `main` en Vercel (Bloque 2.5 incluido). Usa Safari en el iPhone salvo que se diga otra cosa.
 
 ### Instalar y primera sesión (iPhone)
 
-- [ ] Abrir `https://<sitio>.netlify.app/` → aparece "Partidos" con los botones "Partido rápido" y "Nuevo partido".
+- [ ] Abrir `https://<proyecto>.vercel.app/` → aparece "Partidos" con los botones "Partido rápido" y "Nuevo partido".
 - [ ] Compartir → **Añadir a pantalla de inicio**. El icono (tarjetas amarilla y roja sobre verde) aparece con el nombre ArbitrajeRemoto.
 - [ ] Abrir la app desde el icono: se abre a pantalla completa, sin barra de Safari.
 - [ ] Ajustes → escribir la frase de acceso → "Iniciar sesión" → aparece "Sesión iniciada". La etiqueta de arriba pasa a "Sincronizado".
@@ -54,7 +53,7 @@ Requisito: el despliegue de `main` con el Bloque 2. Usa Safari en el iPhone salv
 7. [ ] "Pausar" 30 s y "Reanudar" → el cronómetro no cuenta esos 30 s.
 8. [ ] Desactiva el modo avión y vuelve a la app → en pocos segundos la etiqueta pasa a "Sincronizado" y desaparecen los "pendiente de enviar".
 9. [ ] Ajustes → "Sincronizar ahora" **tres veces**.
-10. [ ] En el PC, abre `https://<sitio>.netlify.app/`, inicia sesión y abre el partido: aparecen **una sola vez** el gol, la amarilla, el cambio y la nota, con el mismo marcador 1–0.
+10. [ ] En el PC, abre `https://<proyecto>.vercel.app/`, inicia sesión y abre el partido: aparecen **una sola vez** el gol, la amarilla, el cambio y la nota, con el mismo marcador 1–0.
        (Comprobación técnica opcional: `GET /api/v1/matches/{id}?include=events` devuelve 5 eventos: inicio, gol, amarilla, cambio y nota).
 
 ### Marcador (iPhone)
@@ -85,3 +84,36 @@ Requisito: el despliegue de `main` con el Bloque 2. Usa Safari en el iPhone salv
 - [ ] El marcador se ve en dos columnas (marcador y cronómetro a la izquierda, botones de equipos a la derecha).
 - [ ] Se puede usar entero con teclado (Tab, Intro, Escape cierra los diálogos) y el foco se ve.
 - [ ] Chrome/Edge ofrecen "Instalar ArbitrajeRemoto" en la barra de direcciones.
+
+## Bloque 2.5 — Vercel + Supabase
+
+Requisito: pasos 1–3 de `docs/DESPLIEGUE.md` hechos. Repite también todas las pruebas del Bloque 2 en la dirección de Vercel:
+son las mismas, solo cambia dónde se guardan los datos.
+
+### Despliegue y base de datos (PC)
+
+- [ ] Supabase → **Table Editor** → esquema `arbitraje`: aparecen 7 tablas, todas con **RLS enabled**.
+- [ ] Supabase → **Database → Policies**: el esquema `arbitraje` **no** tiene políticas (es lo correcto: solo entra el servidor).
+- [ ] Vercel → **Settings → Functions**: región **iad1** (Washington, D.C.).
+- [ ] Vercel → **Settings → Environment Variables**: están `DATABASE_URL`, `ADMIN_PASSPHRASE_HASH`, `SESSION_SECRET` y `CRON_SECRET`.
+- [ ] La clave no llega al navegador: en el PC abre la web, pulsa F12 → **Sources/Fuentes**, busca `postgresql` en los
+      archivos `.js` → **0 resultados**.
+- [ ] `examples/curl.sh` contra Vercel termina con `✓` (comprueba también que `?status=`, `?fields=`, `?since=` y `?token=`
+      llegan bien a la función).
+- [ ] Vercel → **Settings → Cron Jobs** → `/api/cron/keepalive` → **Run** → en **Logs**, respuesta 200 con `"ok":true`.
+- [ ] Abrir `https://<proyecto>.vercel.app/api/cron/keepalive` en el navegador → **401** (sin el secreto no se puede llamar).
+- [ ] Haz un push a una rama que no sea `main`: en Vercel → **Deployments** aparece como **Canceled** (sin gastar cuota de build).
+- [ ] Una semana después: no ha llegado ningún correo de Supabase avisando de pausa por inactividad.
+
+### iPhone: datos en Supabase
+
+1. [ ] Instala la app desde `https://<proyecto>.vercel.app` (Compartir → Añadir a pantalla de inicio) e inicia sesión.
+2. [ ] Modo avión → **Partido rápido** → inicia el 1.er tiempo, gol del 9 local y amarilla al 4 visitante.
+3. [ ] Quita el modo avión → la etiqueta pasa a "Sincronizado" (si tarda unos 30 s en lugar de unos pocos, dímelo).
+4. [ ] Ajustes → "Sincronizar ahora" **tres veces**.
+5. [ ] Supabase → **Table Editor → arbitraje → events**: filtra por el `match_id` del partido → hay exactamente **3 filas**
+       (inicio, gol, amarilla), con `seq` 1, 2 y 3. Ninguna repetida.
+6. [ ] Borra el partido desde la web (Editar datos → Borrar partido) → en `events` ya no hay filas de ese partido, y en
+       `matches` la fila sigue con `deleted_at` relleno (así un reenvío del reloj recibe 410 en vez de resucitarlo).
+7. [ ] Primera petición del día (con la app cerrada desde ayer): abre la app y mira cuánto tarda en pasar a "Sincronizado".
+       Si son más de 5 segundos, dímelo (puede ser el "arranque en frío" de la función).
