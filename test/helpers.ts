@@ -1,10 +1,15 @@
-// Test helpers: an in-memory API with a controllable clock.
+// Test helpers: an API with a controllable clock, on an in-memory store or, with
+// TEST_STORE=postgres, on a fresh Postgres database per makeApi() (see test/pg.ts).
 
 import { randomUUID } from 'node:crypto';
 import type { StoredEvent } from '../core/types.ts';
 import { createApp } from '../server/app.ts';
 import { hashPassphrase } from '../server/crypto.ts';
 import { MemoryStore } from '../server/store.ts';
+import { LazyPostgresStore, PG_URL } from './pg.ts';
+
+export const USE_POSTGRES = process.env.TEST_STORE === 'postgres';
+if (USE_POSTGRES && !PG_URL) throw new Error('TEST_STORE=postgres needs TEST_DATABASE_URL');
 
 export const PASSPHRASE = 'correct horse battery staple';
 export const PASSPHRASE_HASH = hashPassphrase(PASSPHRASE);
@@ -12,7 +17,7 @@ export const SESSION_SECRET = 'test-secret-test-secret-test-secret-0123';
 export const T0 = Date.parse('2026-10-25T16:00:00.000Z');
 
 export function makeApi() {
-  const store = new MemoryStore();
+  const store = USE_POSTGRES ? new LazyPostgresStore() : new MemoryStore();
   const clock = { now: T0 };
   const app = createApp({
     store,
