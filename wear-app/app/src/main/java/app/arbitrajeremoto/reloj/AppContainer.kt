@@ -9,6 +9,7 @@ import app.arbitrajeremoto.reloj.api.ApiClient
 import app.arbitrajeremoto.reloj.api.UrlConnectionTransport
 import app.arbitrajeremoto.reloj.data.DeviceKeyRepository
 import app.arbitrajeremoto.reloj.data.MatchRepository
+import app.arbitrajeremoto.reloj.data.RemoteRepository
 import app.arbitrajeremoto.reloj.data.db.RelojDatabase
 import app.arbitrajeremoto.reloj.domain.EventClock
 import app.arbitrajeremoto.reloj.ui.Haptics
@@ -52,6 +53,7 @@ class AppContainer(context: Context) {
     val eventClock = EventClock()
     val matches = MatchRepository(database.dao(), eventClock, deviceId = { settings.deviceId() })
     val haptics = Haptics(appContext)
+    val remote = RemoteRepository(database.dao(), api)
 
     val deviceName: String = Build.MODEL.orEmpty().take(40).ifBlank { "Wear OS" }
 
@@ -74,7 +76,19 @@ class AppContainer(context: Context) {
         if (state is PairingState.Paired) onKeyAvailable()
     }
 
-    fun onKeyAvailable() = syncSoon()
+    fun onKeyAvailable() {
+        syncSoon()
+        refreshServerData()
+    }
+
+    /** Matches of the day and rosters, kept for offline use (guide §9). Best effort. */
+    fun refreshServerData() {
+        appScope.launch {
+            if (!network.online.value || !prepareApi()) return@launch
+            remote.refreshTeams()
+            remote.refreshTodayMatches()
+        }
+    }
 
     /** A local event or match was stored: send it now if there is network, else when it returns. */
     fun onLocalChange() = syncSoon()

@@ -45,6 +45,7 @@
     <string name="status_scheduled">Not started</string>
     <string name="status_live">%1$s′ · %2$s</string>
     <string name="status_paused">Paused · %1$s′</string>
+    <string name="status_in_play">Live</string>
     <string name="status_halftime">Break</string>
     <string name="status_finished">Full time</string>
     <string name="added_announced">+%1$d announced</string>
@@ -113,4 +114,14 @@
     <string name="create_conflict">This match id exists with other data on the server (ID_CONFLICT)</string>
     <string name="create_deleted">Deleted on the web: not sent any more</string>
     <string name="create_rejected">The server did not accept this match (%1$s)</string>
+    <!-- Server data -->
+    <string name="home_server_matches">Today\'s matches</string>
+    <string name="server_matches_title">Today</string>
+    <string name="server_matches_empty">No scheduled or live matches</string>
+    <string name="server_matches_never">Not downloaded yet</string>
+    <string name="server_matches_updated">Updated %1$s</string>
+    <string name="server_matches_refresh">Refresh</string>
+    <string name="server_matches_offline">No connection: last list shown</string>
+    <string name="server_open_failed">Could not open the match (%1$s)</string>
+    <string name="server_match_item">%1$s – %2$s</string>
 </resources>

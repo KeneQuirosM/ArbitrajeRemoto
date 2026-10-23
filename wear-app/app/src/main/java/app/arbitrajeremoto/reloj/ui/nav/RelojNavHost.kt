@@ -29,7 +29,17 @@ import app.arbitrajeremoto.reloj.ui.match.eventName
 import app.arbitrajeremoto.reloj.ui.match.rememberNow
 import app.arbitrajeremoto.reloj.ui.match.teamName
 import app.arbitrajeremoto.reloj.ui.pairing.PairScreen
+import app.arbitrajeremoto.reloj.ui.server.ServerMatchesScreen
+import app.arbitrajeremoto.reloj.ui.server.ServerViewModel
+import app.arbitrajeremoto.reloj.ui.match.RosterPlayer
+import app.arbitrajeremoto.reloj.ui.components.WideButton
+import app.arbitrajeremoto.reloj.data.MatchView
+import app.arbitrajeremoto.reloj.data.RemoteRepository
+import kotlinx.coroutines.delay
 import app.arbitrajeremoto.reloj.ui.settings.SettingsScreen
+
+/** How often an open match reads new server events. */
+private const val REFRESH_MS = 20_000L
 
 object Routes {
     const val LOADING = "loading"
@@ -44,6 +54,7 @@ object Routes {
     const val ADDED = "added/{id}"
     const val CLOCK = "clock/{id}"
     const val UNDO = "undo/{id}"
+    const val SERVER = "server"
 
     fun match(id: String) = "match/$id"
     fun pick(id: String, type: String, team: TeamSide) = "pick/$id/$type/${team.wire}"
@@ -63,6 +74,12 @@ fun RelojNavHost(viewModel: MainViewModel) {
     val settings by viewModel.settings.collectAsState()
     // Activity-scoped, shared by the match screen and its pickers
     val matchViewModel: MatchViewModel = viewModel()
+    val serverViewModel: ServerViewModel = viewModel()
+    val teams by serverViewModel.teams.collectAsState()
+    // Shirt numbers with names when the match side has a roster (block R4)
+    val rosterOf: (MatchView, TeamSide) -> List<RosterPlayer> = { view, side ->
+        teams?.value?.teams?.let { RemoteRepository.roster(it, view.match, side) }.orEmpty()
+    }
 
     LaunchedEffect(start) {
         val route = when (start) {
@@ -96,6 +113,26 @@ fun RelojNavHost(viewModel: MainViewModel) {
                     onQuickMatch = { matchViewModel.createQuickMatch { navController.navigate(Routes.match(it)) } },
                     onOpenMatch = { navController.navigate(Routes.match(it)) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },
+                    extraItems = {
+                        item {
+                            WideButton(stringResource(R.string.home_server_matches), {
+                                serverViewModel.refresh()
+                                navController.navigate(Routes.SERVER)
+                            })
+                        }
+                    },
+                )
+            }
+            composable(Routes.SERVER) {
+                val list by serverViewModel.todayMatches.collectAsState()
+                val busy by serverViewModel.busy.collectAsState()
+                val error by serverViewModel.error.collectAsState()
+                ServerMatchesScreen(
+                    list = list,
+                    busy = busy,
+                    error = error,
+                    onRefresh = serverViewModel::refresh,
+                    onOpen = { id -> serverViewModel.open(id) { navController.navigate(Routes.match(it)) } },
                 )
             }
             composable(Routes.SETTINGS) {
@@ -108,6 +145,13 @@ fun RelojNavHost(viewModel: MainViewModel) {
             composable(Routes.MATCH) { entry ->
                 val id = entry.arguments?.getString("id").orEmpty()
                 val online by viewModel.online.collectAsState()
+                // While the match is open and there is network, read what the web added (?since=lastSeq)
+                LaunchedEffect(id, online) {
+                    while (online) {
+                        serverViewModel.refreshEvents(id)
+                        delay(REFRESH_MS)
+                    }
+                }
                 MatchScreen(
                     viewModel = matchViewModel,
                     matchId = id,
@@ -125,7 +169,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 WithMatch(matchViewModel, id) { view ->
                     NumberPickerScreen(
                         title = stringResource(R.string.picker_title, stringResource(eventName(type)), view.teamName(team)),
-                        roster = emptyList(),
+                        roster = rosterOf(view, team),
                         allowNone = true,
                         onPick = { number -> record(id, EventDraft(type, team = team, playerNumber = number)) },
                     )
@@ -137,7 +181,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 WithMatch(matchViewModel, id) { view ->
                     NumberPickerScreen(
                         title = stringResource(R.string.picker_sub_out, view.teamName(team)),
-                        roster = emptyList(),
+                        roster = rosterOf(view, team),
                         allowNone = false,
                         onPick = { out -> if (out != null) navController.navigate(Routes.subIn(id, team, out)) },
                     )
@@ -150,7 +194,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 WithMatch(matchViewModel, id) { view ->
                     NumberPickerScreen(
                         title = stringResource(R.string.picker_sub_in, view.teamName(team), out),
-                        roster = emptyList(),
+                        roster = rosterOf(view, team),
                         allowNone = false,
                         exclude = out,
                         onPick = { inn ->

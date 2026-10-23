@@ -45,6 +45,7 @@
     <string name="status_scheduled">Sin empezar</string>
     <string name="status_live">%1$s′ · %2$s</string>
     <string name="status_paused">Pausa · %1$s′</string>
+    <string name="status_in_play">En juego</string>
     <string name="status_halftime">Descanso</string>
     <string name="status_finished">Final</string>
     <string name="added_announced">+%1$d anunciados</string>
@@ -113,4 +114,14 @@
     <string name="create_conflict">Ese id de partido existe con otros datos en el servidor (ID_CONFLICT)</string>
     <string name="create_deleted">Borrado en la web: ya no se envía</string>
     <string name="create_rejected">El servidor no aceptó este partido (%1$s)</string>
+    <!-- Datos del servidor -->
+    <string name="home_server_matches">Partidos del día</string>
+    <string name="server_matches_title">Hoy</string>
+    <string name="server_matches_empty">No hay partidos programados ni en juego</string>
+    <string name="server_matches_never">Todavía sin descargar</string>
+    <string name="server_matches_updated">Actualizado %1$s</string>
+    <string name="server_matches_refresh">Actualizar</string>
+    <string name="server_matches_offline">Sin conexión: se muestra la última lista</string>
+    <string name="server_open_failed">No se pudo abrir el partido (%1$s)</string>
+    <string name="server_match_item">%1$s – %2$s</string>
 </resources>
