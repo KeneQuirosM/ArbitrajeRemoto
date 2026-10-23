@@ -3,6 +3,7 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "web/dist",
+  "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"preview\" ]; then exit 0; else exit 1; fi",
   "regions": ["iad1"],
   "functions": {
     "api/router.ts": { "maxDuration": 15 },
