@@ -628,7 +628,7 @@ components:
     PlayerNumber:
       type: integer
       minimum: 1
-      maximum: 99
+      maximum: 999
     PairingCode:
       type: string
       pattern: '^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$'

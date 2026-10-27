@@ -5,10 +5,12 @@ const ID = '6f1c1d2e-3b4a-4c5d-8e9f-0a1b2c3d4e5f';
 const TS = '2026-10-25T16:05:00.000Z';
 
 describe('validatePlayerNumber', () => {
-  it('accepts 1–99 integers only', () => {
+  it('accepts 1–999 integers only', () => {
     expect(validatePlayerNumber(1).ok).toBe(true);
     expect(validatePlayerNumber(99).ok).toBe(true);
-    for (const bad of [0, 100, 7.5, '7', -1, NaN]) expect(validatePlayerNumber(bad).ok).toBe(false);
+    expect(validatePlayerNumber(108).ok).toBe(true);
+    expect(validatePlayerNumber(999).ok).toBe(true);
+    for (const bad of [0, 1000, 7.5, '7', -1, NaN]) expect(validatePlayerNumber(bad).ok).toBe(false);
   });
 });
 
@@ -79,6 +81,7 @@ describe('validatePlayers', () => {
     const r = validatePlayers([{ number: 10, name: 'Ana' }, { number: 1 }], makeId);
     expect(r.ok && r.value.map((p) => p.number)).toEqual([1, 10]);
     expect(validatePlayers([{ number: 3 }, { number: 3 }], makeId)).toEqual({ ok: false, reason: 'duplicate_player_number' });
-    expect(validatePlayers([{ number: 100 }], makeId).ok).toBe(false);
+    expect(validatePlayers([{ number: 1000 }], makeId).ok).toBe(false);
+    expect(validatePlayers([{ number: 108 }], makeId).ok).toBe(true);
   });
 });

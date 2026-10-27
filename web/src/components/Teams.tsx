@@ -95,7 +95,7 @@ function TeamFormInner(props: { initial: Team | null }) {
               <li key={row.id} class="roster-row">
                 <label class="field field-number">
                   <span class="field-label">{t('teams.number')}</span>
-                  <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={2} value={row.number} onInput={(e) => update(row.id, { number: (e.target as HTMLInputElement).value })} />
+                  <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={3} value={row.number} onInput={(e) => update(row.id, { number: (e.target as HTMLInputElement).value })} />
                 </label>
                 <label class="field field-grow">
                   <span class="field-label">{t('teams.playerName')}</span>

@@ -150,6 +150,21 @@ describe('event batches', () => {
     expect(res.body.state).toMatchObject({ status: 'halftime', score: { home: 0, away: 1 }, lastSeq: 7 });
   });
 
+  it('stores three-digit shirt numbers (futsal) up to 999', async () => {
+    const events = [
+      { id: randomUUID(), type: 'period_start', period: 1, clientTimestamp: iso(T0) },
+      { id: randomUUID(), type: 'goal', team: 'home', playerNumber: 108, clientTimestamp: iso(T0 + MIN) },
+      { id: randomUUID(), type: 'yellow_card', team: 'away', playerNumber: 999, clientTimestamp: iso(T0 + 2 * MIN) },
+      { id: randomUUID(), type: 'substitution', team: 'away', playerOutNumber: 999, playerInNumber: 100, clientTimestamp: iso(T0 + 3 * MIN) },
+    ];
+    const res = await api.call('POST', `/matches/${matchId}/events`, { deviceId: 'web-1', sentAt: iso(api.clock.now), events });
+    expect(res.body.results.map((r: { status: string }) => r.status)).toEqual(['accepted', 'accepted', 'accepted', 'accepted']);
+    expect(res.body.state.discipline).toEqual([{ team: 'away', playerNumber: 999, yellow: 1, red: false, secondYellow: false }]);
+    const read = await api.call('GET', `/matches/${matchId}/events`);
+    expect(read.body.events.map((e: { playerNumber: number | null }) => e.playerNumber)).toEqual([null, 108, 999, null]);
+    expect(read.body.events[3]).toMatchObject({ playerOutNumber: 999, playerInNumber: 100 });
+  });
+
   it('sending the same batch 3 times leaves exactly the same data', async () => {
     const events = sampleEvents(matchId);
     const send = () => api.call('POST', `/matches/${matchId}/events`, { deviceId: 'web-1', sentAt: iso(api.clock.now), events });
@@ -186,7 +201,7 @@ describe('event batches', () => {
       events: [
         good,
         { ...good, period: 2 },
-        { id: randomUUID(), type: 'goal', team: 'home', playerNumber: 120, clientTimestamp: iso(T0) },
+        { id: randomUUID(), type: 'goal', team: 'home', playerNumber: 1000, clientTimestamp: iso(T0) },
         { id: randomUUID(), type: 'goal', team: 'home', clientTimestamp: iso(T0 + 2 * 60 * MIN) },
         { id: randomUUID(), type: 'period_start', period: 3, clientTimestamp: iso(T0) },
         { id: randomUUID(), matchId: randomUUID(), type: 'match_end', clientTimestamp: iso(T0) },

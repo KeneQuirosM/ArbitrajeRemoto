@@ -11,6 +11,7 @@ Registro de partidos para árbitros de fútbol: web (PWA, funciona sin conexión
 | 2 | Web nueva (PWA): partidos, plantillas, marcador en vivo, deshacer, modo sin conexión **y sincronización** (adelantada del bloque 3) | ✅ |
 | 2.5 | Portado a **Vercel + Supabase** (Postgres), mismo contrato de API | ✅ |
 | 3 | Vista en vivo, informe/PDF, vinculación del reloj, `docs/GUIA_RELOJ.md` | pendiente |
+| Reloj | **App del reloj** (Wear OS, Galaxy Watch 4): vinculación, partido sin conexión, cola de envío, datos del servidor — [`wear-app/`](wear-app/README.md), CI `wear-app.yml` con pruebas de contrato | ✅ (pruebas en el reloj por verificar: [`wear-app/docs/PRUEBAS.md`](wear-app/docs/PRUEBAS.md)) |
 
 ## Stack
 
@@ -30,6 +31,7 @@ web/                  la PWA (src/: pantallas, IndexedDB, sincronización, tradu
 e2e/                  pruebas de extremo a extremo (Playwright)
 scripts/              servidor local, migraciones, hash de la frase, datos de prueba
 examples/curl.sh      colección de ejemplos ejecutable
+wear-app/             app del reloj (Kotlin, Wear OS) y sus pruebas de contrato contra esta API
 docs/                 API.md, CRONOMETRO.md, DESPLIEGUE.md, PRUEBAS_MANUALES.md
 openapi.yaml          contrato formal de la API
 ```

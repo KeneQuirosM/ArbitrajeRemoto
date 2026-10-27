@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ArbitrajeRemoto Reloj</string>
+
+    <!-- Pairing -->
+    <string name="pair_title">Pair</string>
+    <string name="pair_requesting">Asking for a code…</string>
+    <string name="pair_instructions">Type it on the web: Settings → Watches</string>
+    <string name="pair_code_description">Code %1$s</string>
+    <string name="pair_expires_in">Expires in %1$s</string>
+    <string name="pair_waiting">Waiting for approval…</string>
+    <string name="pair_no_network">No connection. Retrying…</string>
+    <string name="pair_saving">Saving the key…</string>
+    <string name="pair_done">Paired ✓</string>
+    <string name="pair_expired">The code expired</string>
+    <string name="pair_used">The code was already used</string>
+    <string name="pair_unknown">The code is no longer valid</string>
+    <string name="pair_rate_limited">Too many codes. Wait %1$s</string>
+    <string name="pair_failed">Could not pair (%1$s)</string>
+    <string name="pair_new_code">Ask for another code</string>
+    <string name="pair_revoked">Watch unpaired. Pair it again</string>
+    <string name="pair_continue">Continue</string>
+
+    <!-- Home -->
+    <string name="home_settings">Settings</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_server_default">Default server</string>
+    <string name="settings_server_adb">Local (adb reverse)</string>
+    <string name="settings_server_emulator">Local (emulator)</string>
+    <string name="settings_server_adb_hint">Other URL (debug): adb shell am start -n app.arbitrajeremoto.reloj/.ui.MainActivity --es server_url URL</string>
+    <string name="settings_device_id">Watch id</string>
+    <string name="settings_pair_again">Pair again</string>
+    <string name="settings_version">Version %1$s</string>
+
+    <!-- Home: matches -->
+    <string name="home_quick_match">Quick match</string>
+    <string name="home_local_matches">Matches on this watch</string>
+    <string name="home_no_matches">No matches yet</string>
+    <string name="home_match_item">%1$s %2$d – %3$d %4$s</string>
+
+    <!-- Match status -->
+    <string name="status_scheduled">Not started</string>
+    <string name="status_live">%1$s′ · %2$s</string>
+    <string name="status_paused">Paused · %1$s′</string>
+    <string name="status_in_play">Live</string>
+    <string name="status_halftime">Break</string>
+    <string name="status_finished">Full time</string>
+    <string name="added_announced">+%1$d announced</string>
+    <string name="score_description">%1$s %2$d, %3$s %4$d. %5$s</string>
+
+    <!-- Clock -->
+    <string name="clock_start">Start period %1$d</string>
+    <string name="clock_pause">Pause</string>
+    <string name="clock_resume">Resume</string>
+    <string name="clock_end_period">End of period %1$d</string>
+    <string name="clock_end_match">End match</string>
+    <string name="clock_finished">Match finished</string>
+    <string name="clock_more_hint">Hold: end of period / end match</string>
+    <string name="clock_more_label">More clock actions</string>
+    <string name="clock_rare_title">Clock</string>
+
+    <!-- Actions -->
+    <string name="action_goal">Goal</string>
+    <string name="action_yellow">Yellow</string>
+    <string name="action_red">Red</string>
+    <string name="action_more">More</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_for_team">%1$s, %2$s</string>
+    <string name="more_title">More</string>
+    <string name="more_own_goal">Own goal %1$s</string>
+    <string name="more_substitution">Substitution %1$s</string>
+    <string name="more_added_time">Added time</string>
+    <string name="pad_delete">Delete</string>
+    <string name="pad_hint_none">Type the number · ✓ = no number</string>
+    <string name="pad_hint">Type the number</string>
+    <string name="pad_same_player">Same as the player out</string>
+    <string name="picker_no_number">No number</string>
+    <string name="picker_number">Number %1$d</string>
+    <string name="picker_title">%1$s · %2$s</string>
+    <string name="picker_sub_out">Player out · %1$s</string>
+    <string name="picker_sub_in">Player in · %1$s (out %2$d)</string>
+    <string name="added_title">Added minutes</string>
+    <string name="added_minutes">+%1$d min</string>
+    <string name="undo_title">Undo</string>
+    <string name="undo_question">Undo %1$s?</string>
+    <string name="undo_question_team">Undo %1$s of %2$s?</string>
+    <string name="undo_question_team_number">Undo %1$s of %2$s, %3$d?</string>
+    <string name="undo_nothing">Nothing to undo</string>
+    <string name="recorded_rejected">Not saved: %1$s</string>
+    <string name="rejected_count">%1$d rejected by the server</string>
+    <string name="second_yellow_short">2nd yellow</string>
+    <string name="red_cards">Sent off: %1$s</string>
+
+    <!-- Event names (also used in "Undo …?") -->
+    <string name="ev_goal">goal</string>
+    <string name="ev_own_goal">own goal</string>
+    <string name="ev_yellow_card">yellow card</string>
+    <string name="ev_red_card">red card</string>
+    <string name="ev_substitution">substitution</string>
+    <string name="ev_note">note</string>
+    <string name="ev_period_start">start of period</string>
+    <string name="ev_period_pause">pause</string>
+    <string name="ev_period_resume">resume</string>
+    <string name="ev_period_end">end of period</string>
+    <string name="ev_added_time">added time</string>
+    <string name="ev_match_end">end of match</string>
+    <string name="ev_void">undo</string>
+    <!-- Sync -->
+    <string name="sync_all_sent">All sent</string>
+    <string name="sync_pending">%1$d pending</string>
+    <string name="sync_offline">No network, %1$d pending</string>
+    <string name="server_state">Server: %1$d – %2$d · %3$s</string>
+    <string name="create_conflict">This match id exists with other data on the server (ID_CONFLICT)</string>
+    <string name="create_deleted">Deleted on the web: not sent any more</string>
+    <string name="create_rejected">The server did not accept this match (%1$s)</string>
+    <!-- Server data -->
+    <string name="home_server_matches">Today\'s matches</string>
+    <string name="server_matches_title">Today</string>
+    <string name="server_matches_empty">No scheduled or live matches</string>
+    <string name="server_matches_never">Not downloaded yet</string>
+    <string name="server_matches_updated">Updated %1$s</string>
+    <string name="server_matches_refresh">Refresh</string>
+    <string name="server_matches_offline">No connection: last list shown</string>
+    <string name="server_open_failed">Could not open the match (%1$s)</string>
+    <string name="server_match_item">%1$s – %2$s</string>
+</resources>
