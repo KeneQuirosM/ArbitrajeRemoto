@@ -1,12 +1,19 @@
 package app.arbitrajeremoto.reloj.ui.nav
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.AppScaffold
+import androidx.wear.compose.material3.CircularProgressIndicator
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
@@ -26,7 +33,6 @@ import app.arbitrajeremoto.reloj.ui.match.NumberPadScreen
 import app.arbitrajeremoto.reloj.ui.match.UndoScreen
 import app.arbitrajeremoto.reloj.ui.match.WithMatch
 import app.arbitrajeremoto.reloj.ui.match.eventName
-import app.arbitrajeremoto.reloj.ui.match.rememberNow
 import app.arbitrajeremoto.reloj.ui.match.teamName
 import app.arbitrajeremoto.reloj.ui.pairing.PairScreen
 import app.arbitrajeremoto.reloj.ui.server.ServerMatchesScreen
@@ -101,7 +107,12 @@ fun RelojNavHost(viewModel: MainViewModel) {
 
     AppScaffold {
         SwipeDismissableNavHost(navController = navController, startDestination = Routes.LOADING) {
-            composable(Routes.LOADING) { }
+            // Shown only for the moment the key is read at start-up
+            composable(Routes.LOADING) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                }
+            }
             composable(Routes.PAIR) {
                 PairScreen(revoked = (start as? StartDestination.Pair)?.revoked == true, onPaired = viewModel::onPaired)
             }
@@ -109,7 +120,6 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 val matches by matchViewModel.matches.collectAsState()
                 HomeScreen(
                     matches = matches,
-                    now = rememberNow(),
                     onQuickMatch = { matchViewModel.createQuickMatch { navController.navigate(Routes.match(it)) } },
                     onOpenMatch = { navController.navigate(Routes.match(it)) },
                     onSettings = { navController.navigate(Routes.SETTINGS) },

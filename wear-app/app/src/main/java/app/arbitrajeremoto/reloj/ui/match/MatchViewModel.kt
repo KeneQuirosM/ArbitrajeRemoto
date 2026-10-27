@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import app.arbitrajeremoto.reloj.container
 import app.arbitrajeremoto.reloj.data.MatchView
 import app.arbitrajeremoto.reloj.domain.EventDraft
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +24,15 @@ class MatchViewModel(app: Application) : AndroidViewModel(app) {
     private val _lastError = MutableStateFlow<String?>(null)
     val lastError: StateFlow<String?> = _lastError.asStateFlow()
 
-    fun observe(matchId: String): Flow<MatchView?> = container.matches.observeMatch(matchId)
+    private val views = mutableMapOf<String, StateFlow<MatchView?>>()
+
+    /**
+     * One shared state per match, kept 5 s after its last screen closes: going from the match to a
+     * picker and back shows the data at once instead of an empty frame while the database is read.
+     */
+    fun match(matchId: String): StateFlow<MatchView?> = views.getOrPut(matchId) {
+        container.matches.observeMatch(matchId).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    }
 
     fun createQuickMatch(onCreated: (String) -> Unit) {
         viewModelScope.launch { onCreated(container.matches.createQuickMatch()) }

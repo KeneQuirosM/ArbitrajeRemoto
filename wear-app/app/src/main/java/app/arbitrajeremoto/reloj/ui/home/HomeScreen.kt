@@ -13,6 +13,7 @@ import app.arbitrajeremoto.reloj.ui.components.BodyText
 import app.arbitrajeremoto.reloj.ui.components.RelojList
 import app.arbitrajeremoto.reloj.ui.components.ScreenTitle
 import app.arbitrajeremoto.reloj.ui.components.WideButton
+import app.arbitrajeremoto.reloj.ui.match.rememberNow
 import app.arbitrajeremoto.reloj.ui.match.statusLine
 import app.arbitrajeremoto.reloj.ui.theme.RelojColors
 import app.arbitrajeremoto.reloj.ui.theme.RelojType
@@ -21,7 +22,6 @@ import app.arbitrajeremoto.reloj.ui.theme.RelojType
 @Composable
 fun HomeScreen(
     matches: List<MatchView>,
-    now: Long,
     onQuickMatch: () -> Unit,
     onOpenMatch: (String) -> Unit,
     onSettings: () -> Unit,
@@ -40,7 +40,7 @@ fun HomeScreen(
             FilledTonalButton(
                 onClick = { onOpenMatch(view.match.id) },
                 modifier = Modifier.fillMaxWidth(),
-                secondaryLabel = { Text(statusLine(view, now), fontSize = RelojType.caption) },
+                secondaryLabel = { Text(statusLine(view, rememberNow(ticking = view.state.clock.running)), fontSize = RelojType.caption) },
                 label = {
                     Text(
                         stringResource(R.string.home_match_item, view.match.homeTeamName, score.home, score.away, view.match.awayTeamName),

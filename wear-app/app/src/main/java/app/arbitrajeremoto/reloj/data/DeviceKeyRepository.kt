@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import app.arbitrajeremoto.reloj.pairing.DeviceCredentials
 import app.arbitrajeremoto.reloj.security.SecretCipher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.security.GeneralSecurityException
 import java.util.Base64
 
@@ -28,14 +30,16 @@ class DeviceKeyRepository(private val store: DataStore<Preferences>, private val
     suspend fun current(): String? {
         if (loaded) return cached
         val blob = store.data.first()[ENCRYPTED_KEY]
-        cached = blob?.let { decryptOrNull(it) }
+        cached = blob?.let { withContext(Dispatchers.Default) { decryptOrNull(it) } }
         loaded = true
         return cached
     }
 
     /** Stores the new key and clears the "revoked" mark in one write. */
     suspend fun save(credentials: DeviceCredentials) {
-        val blob = Base64.getEncoder().encodeToString(cipher.encrypt(credentials.deviceKey.toByteArray(Charsets.UTF_8)))
+        val blob = withContext(Dispatchers.Default) {
+            Base64.getEncoder().encodeToString(cipher.encrypt(credentials.deviceKey.toByteArray(Charsets.UTF_8)))
+        }
         store.edit { p ->
             p[ENCRYPTED_KEY] = blob
             val keyId = credentials.keyId

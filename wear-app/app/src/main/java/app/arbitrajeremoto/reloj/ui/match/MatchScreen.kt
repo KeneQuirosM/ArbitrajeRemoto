@@ -54,12 +54,13 @@ fun syncDot(pending: Int, online: Boolean): SyncDot = when {
     else -> SyncDot(RelojColors.synced, stringResource(R.string.sync_all_sent))
 }
 
-/** Ticks once a second; the clock itself is always recomputed from the events. */
+/** Ticks once a second while [ticking]; the clock itself is always recomputed from the events. */
 @Composable
-fun rememberNow(): Long {
+fun rememberNow(ticking: Boolean = true): Long {
     val now = remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
+    LaunchedEffect(ticking) {
+        now.longValue = System.currentTimeMillis()
+        while (ticking) {
             now.longValue = System.currentTimeMillis()
             delay(1_000 - System.currentTimeMillis() % 1_000)
         }
@@ -77,9 +78,8 @@ fun MatchScreen(
     onClockRare: () -> Unit,
     onUndo: () -> Unit,
 ) {
-    val view by remember(matchId) { viewModel.observe(matchId) }.collectAsState(initial = null)
+    val view by viewModel.match(matchId).collectAsState()
     val error by viewModel.lastError.collectAsState()
-    val now = rememberNow()
     val current = view ?: return
     val state = current.state
 
@@ -92,12 +92,12 @@ fun MatchScreen(
     }
 
     RelojList {
-        item { Scoreboard(current, now, syncDot(current.pendingCount, online)) }
-        item { ClockButton(current, { viewModel.record(matchId, it.toDraft()) }, onClockRare) }
+        item(key = "score") { Scoreboard(current, syncDot(current.pendingCount, online)) }
+        item(key = "clock") { ClockButton(current, { viewModel.record(matchId, it.toDraft()) }, onClockRare) }
         for (side in TeamSide.entries) {
-            item { TeamActions(current, side, onPick) }
+            item(key = "team-${side.wire}") { TeamActions(current, side, onPick) }
         }
-        item {
+        item(key = "more") {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
                 BigButton(
                     stringResource(R.string.action_more),
@@ -150,7 +150,9 @@ private const val RECENT_EVENTS = 6
 
 /** "Local 0 – 0 Visitante", the minute and the send status; read as one sentence by TalkBack. */
 @Composable
-private fun Scoreboard(view: MatchView, now: Long, dot: SyncDot?) {
+private fun Scoreboard(view: MatchView, dot: SyncDot?) {
+    // Only this part ticks; while the clock is stopped nothing changes, so it does not tick at all
+    val now = rememberNow(ticking = view.state.clock.running)
     val status = statusLine(view, now)
     val score = view.state.score
     val spoken = stringResource(R.string.score_description, view.match.homeTeamName, score.home, view.match.awayTeamName, score.away, status) +

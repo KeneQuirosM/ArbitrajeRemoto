@@ -18,7 +18,9 @@ import app.arbitrajeremoto.reloj.domain.MatchState
 import app.arbitrajeremoto.reloj.domain.TeamSide
 import app.arbitrajeremoto.reloj.domain.Validate
 import app.arbitrajeremoto.reloj.domain.Validated
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
@@ -51,10 +53,11 @@ class MatchRepository(
         combine(dao.observeMatches(), dao.observeAllEvents()) { matches, events ->
             val byMatch = events.groupBy { it.matchId }
             matches.filter { it.createState != CreateState.DELETED }.map { view(it, byMatch[it.id].orEmpty()) }
-        }
+        }.flowOn(Dispatchers.Default)
 
     fun observeMatch(id: String): Flow<MatchView?> =
         combine(dao.observeMatch(id), dao.observeEvents(id)) { match, events -> match?.let { view(it, events) } }
+            .flowOn(Dispatchers.Default)
 
     fun observePendingCount(): Flow<Int> = dao.observePendingCount().map { it }
 

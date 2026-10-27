@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.wear.compose.foundation.lazy.items
@@ -116,6 +115,6 @@ fun UndoScreen(view: MatchView, onUndo: (String) -> Unit, onCancel: () -> Unit) 
 /** Loads a match for a sub-screen; shows nothing until it is read from the database. */
 @Composable
 fun WithMatch(viewModel: MatchViewModel, matchId: String, content: @Composable (MatchView) -> Unit) {
-    val view by remember(matchId) { viewModel.observe(matchId) }.collectAsState(initial = null)
+    val view by viewModel.match(matchId).collectAsState()
     view?.let { content(it) }
 }
