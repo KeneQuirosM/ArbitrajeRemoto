@@ -72,7 +72,7 @@ derivan siempre de los eventos con la función pura `core/derive.ts`.
 
 ### Team
 
-`{ id, name (1–60), players: [{ id, number (1–99, único en el equipo), name (≤ 60) | null }], createdAt, updatedAt }`, máx. 60 jugadores.
+`{ id, name (1–60), players: [{ id, number (1–999, único en el equipo), name (≤ 60) | null }], createdAt, updatedAt }`, máx. 60 jugadores.
 
 ### Event (inmutable)
 
@@ -83,8 +83,8 @@ Lo que envía el cliente:
 | `id` | todos | uuid generado en el dispositivo: **clave de idempotencia** |
 | `type` | — | ver tabla siguiente |
 | `team` | goal, own_goal, yellow_card, red_card, substitution (obligatorio); note (opcional) | `home` \| `away` |
-| `playerNumber` | goal, own_goal, cards, note (opcional) | 1–99 |
-| `playerOutNumber`, `playerInNumber` | substitution (obligatorios, distintos) | 1–99 |
+| `playerNumber` | goal, own_goal, cards, note (opcional) | 1–999 |
+| `playerOutNumber`, `playerInNumber` | substitution (obligatorios, distintos) | 1–999 |
 | `text` | note (obligatorio) | 1–500 caracteres, se permiten saltos de línea |
 | `period` | period_start, period_end (obligatorio); period_pause, period_resume, added_time (opcional) | 1..`periods` del partido |
 | `minutes` | added_time (obligatorio) | 0–30 |
@@ -231,7 +231,7 @@ Devuelve `ETag`; con `If-None-Match` igual responde `304` sin cuerpo (consulta c
 ## Seguridad (resumen)
 
 - Solo HTTPS (Vercel; cabecera HSTS en `vercel.json`). La cookie es `Secure`, `HttpOnly`, `SameSite=Strict` y limitada a `/api`.
-- Toda entrada se valida (tipos, rangos 1–99, longitudes) y el texto se limpia de caracteres de control. El texto se guarda tal cual y
+- Toda entrada se valida (tipos, rangos de dorsal 1–999, longitudes) y el texto se limpia de caracteres de control. El texto se guarda tal cual y
   **se escapa al mostrarlo** (la web nunca usa `innerHTML` con datos).
 - Sin CORS: la API solo se usa desde su propio dominio (la web) o desde la app nativa del reloj.
 - Secretos solo en variables de entorno de Vercel; nada en el repositorio (ver `docs/DESPLIEGUE.md`).

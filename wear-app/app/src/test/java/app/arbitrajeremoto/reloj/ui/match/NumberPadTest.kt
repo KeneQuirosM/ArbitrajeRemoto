@@ -8,26 +8,24 @@ import org.junit.Test
 
 class NumberPadTest {
     @Test
-    fun `two digits pick at once`() {
-        val first = NumberPad.press("", 1)
-        assertEquals(PadResult.Typing("1"), first)
-        assertEquals(PadResult.Done(10), NumberPad.press("1", 0))
-        assertEquals(PadResult.Done(99), NumberPad.press("9", 9))
-    }
-
-    @Test
-    fun `one digit needs the check key`() {
-        assertEquals(PadResult.Typing("9"), NumberPad.press("", 9))
-        assertTrue(NumberPad.canConfirm("9", allowNone = true))
+    fun `digits only build the number, check confirms it`() {
+        var digits = ""
+        for (d in listOf(1, 0, 8)) digits = NumberPad.press(digits, d).digits
+        assertEquals("108", digits)
+        assertEquals(PadResult.Done(108), NumberPad.confirm(digits, allowNone = true))
+        // Two digits no longer pick at once: 10 could be the start of 108
+        assertEquals(PadResult.Typing("10"), NumberPad.press("1", 0))
         assertEquals(PadResult.Done(9), NumberPad.confirm("9", allowNone = true))
+        assertEquals(PadResult.Done(999), NumberPad.confirm("999", allowNone = false))
     }
 
     @Test
-    fun `no leading zero and never more than two digits`() {
+    fun `no leading zero and never more than three digits`() {
         assertFalse(NumberPad.digitEnabled("", 0))
         assertEquals(PadResult.Typing(""), NumberPad.press("", 0))
-        assertTrue(NumberPad.digitEnabled("1", 0))
-        assertFalse(NumberPad.digitEnabled("12", 3))
+        assertTrue(NumberPad.digitEnabled("10", 0))
+        assertFalse(NumberPad.digitEnabled("108", 3))
+        assertEquals(PadResult.Typing("108"), NumberPad.press("108", 3))
     }
 
     @Test
@@ -39,16 +37,14 @@ class NumberPadTest {
 
     @Test
     fun `the player going out cannot come in`() {
-        // Two digits equal to the excluded number stay on screen instead of being picked
-        assertEquals(PadResult.Typing("10"), NumberPad.press("1", 0, exclude = 10))
-        assertFalse(NumberPad.canConfirm("10", allowNone = false, exclude = 10))
-        assertFalse(NumberPad.canConfirm("7", allowNone = false, exclude = 7))
-        assertEquals(PadResult.Done(14), NumberPad.press("1", 4, exclude = 10))
+        assertFalse(NumberPad.canConfirm("108", allowNone = false, exclude = 108))
+        assertNull(NumberPad.confirm("7", allowNone = false, exclude = 7))
+        assertEquals(PadResult.Done(14), NumberPad.confirm("14", allowNone = false, exclude = 108))
     }
 
     @Test
     fun `delete removes the last digit`() {
-        assertEquals("1", NumberPad.delete("10"))
+        assertEquals("10", NumberPad.delete("108"))
         assertEquals("", NumberPad.delete("1"))
         assertEquals("", NumberPad.delete(""))
     }

@@ -50,7 +50,8 @@ Instalación: [`../README.md`](../README.md#instalar-en-el-galaxy-watch-4-paso-a
 - [ ] Botón del cronómetro: tocar = Iniciar / Pausar / Reanudar / Iniciar 2.º tiempo. **Mantener pulsado** = «Fin del 1.º tiempo» /
   «Terminar partido». Un toque accidental no termina nada.
 - [ ] **Teclado de dorsal**: las teclas se pulsan bien con el dedo y no se cortan en los bordes de la pantalla redonda.
-- [ ] «10» se registra al tocar la segunda cifra; «9» necesita ✓; ✓ sin cifras registra «Sin dorsal»; ⌫ borra.
+- [ ] «9» → ✓, «10» → ✓ y «108» → ✓ se registran con ese dorsal; no deja escribir una cuarta cifra ni empezar por 0; ✓ sin cifras registra «Sin dorsal»; ⌫ borra.
+- [ ] Un gol con el 108 aparece en la web con el 108 (necesita la migración `20261027120000_player_numbers_999.sql` aplicada en Supabase).
 - [ ] En un cambio, el dorsal que entra no puede ser el mismo que sale («Es el mismo que sale»).
 - [ ] Segunda amarilla del mismo dorsal: aparece en «Expulsados: Visitante 5 (2.ª amarilla)».
 - [ ] Autogol y Cambio desde «Más»; el cambio no deja elegir el mismo dorsal para entrar.

@@ -217,7 +217,7 @@ Para que dos eventos del reloj nunca compartan el milisegundo (por ejemplo, con 
 | `period_end` | `period` | | `{"type":"period_end","period":1}` |
 | `added_time` | `minutes` (0–30) | `period` | `{"type":"added_time","minutes":3}` |
 | `match_end` | | | `{"type":"match_end"}` (también para suspender) |
-| `goal` | `team` | `playerNumber` (1–99) | `{"type":"goal","team":"home","playerNumber":9}` |
+| `goal` | `team` | `playerNumber` (1–999) | `{"type":"goal","team":"home","playerNumber":9}` |
 | `own_goal` | `team` (equipo **del jugador**; suma al rival) | `playerNumber` | `{"type":"own_goal","team":"away","playerNumber":4}` |
 | `yellow_card` / `red_card` | `team` | `playerNumber` | `{"type":"yellow_card","team":"away","playerNumber":4}` |
 | `substitution` | `team`, `playerOutNumber`, `playerInNumber` (distintos) | | `{"type":"substitution","team":"home","playerOutNumber":10,"playerInNumber":14}` |
@@ -320,7 +320,7 @@ Respuesta `200`, también cuando se rechaza algún evento:
 Son ideas, **por verificar** en el reloj real:
 
 - **Dorsal:** si el partido tiene plantilla, una lista de dorsales (con nombre) para elegir con el bisel o deslizando. Si no la
-  tiene, un selector de 1 a 99 que se gira con el bisel, más la opción **"Sin dorsal"** (`playerNumber` se omite).
+  tiene, un teclado numérico para el dorsal (1 a 999, se confirma con ✓), más la opción **"Sin dorsal"** (`playerNumber` se omite).
 - **Botones grandes:** Gol, Amarilla y Roja por equipo, y un botón de cronómetro (Iniciar/Pausar/Reanudar). Mantener pulsado
   para las acciones raras (fin del tiempo, terminar).
 - **Deshacer:** muestra qué se va a deshacer ("¿Deshacer gol de Local, 9?") y crea un `void`.

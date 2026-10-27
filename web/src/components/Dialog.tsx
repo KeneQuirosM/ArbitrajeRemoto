@@ -3,6 +3,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Player } from '../../../core/types.ts';
+import { LIMITS } from '../../../core/validate.ts';
 import { t } from '../i18n/index.ts';
 
 let dialogCounter = 0;
@@ -57,9 +58,9 @@ export function ConfirmDialog(props: {
 function parseNumber(value: string): number | null | 'invalid' {
   const trimmed = value.trim();
   if (trimmed === '') return null;
-  if (!/^\d{1,2}$/.test(trimmed)) return 'invalid';
+  if (!/^\d{1,3}$/.test(trimmed)) return 'invalid';
   const n = Number(trimmed);
-  return n >= 1 && n <= 99 ? n : 'invalid';
+  return n >= LIMITS.minPlayerNumber && n <= LIMITS.maxPlayerNumber ? n : 'invalid';
 }
 
 function RosterChips(props: { roster: Player[]; selected: number | null; onPick: (n: number) => void; muted?: Set<number> }) {
@@ -84,7 +85,7 @@ function RosterChips(props: { roster: Player[]; selected: number | null; onPick:
   );
 }
 
-/** Asks for an optional player number (1–99). */
+/** Asks for an optional player number (1–999). */
 export function PlayerDialog(props: {
   title: string;
   roster: Player[];
@@ -115,7 +116,7 @@ export function PlayerDialog(props: {
             class="input input-number"
             inputMode="numeric"
             pattern="[0-9]*"
-            maxLength={2}
+            maxLength={3}
             autoComplete="off"
             value={value}
             aria-invalid={error ? 'true' : undefined}
@@ -169,11 +170,11 @@ export function SubstitutionDialog(props: {
         <div class="field-row">
           <label class="field">
             <span class="field-label">{t('dialog.playerOut')}</span>
-            <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={2} value={out} required onInput={(e) => setOut((e.target as HTMLInputElement).value)} />
+            <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={3} value={out} required onInput={(e) => setOut((e.target as HTMLInputElement).value)} />
           </label>
           <label class="field">
             <span class="field-label">{t('dialog.playerIn')}</span>
-            <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={2} value={inn} required onInput={(e) => setInn((e.target as HTMLInputElement).value)} />
+            <input class="input input-number" inputMode="numeric" pattern="[0-9]*" maxLength={3} value={inn} required onInput={(e) => setInn((e.target as HTMLInputElement).value)} />
           </label>
         </div>
         {error ? <p class="field-error" role="alert">{error}</p> : null}

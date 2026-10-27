@@ -129,7 +129,7 @@ Bluetooth, solo usar su Wi‑Fi compartida. **Por verificar** con tu reloj.
   recalcula con los eventos, así que si la pantalla se apaga no se pierde nada. Coste: batería (**por verificar**).
 - **Clave**: AES‑256/GCM con una clave del Android Keystore; el resultado va en DataStore (`reloj_prefs`), excluido de
   copias de seguridad y transferencias (`data_extraction_rules.xml`, `backup_rules.xml`). Sin `EncryptedSharedPreferences`.
-- **Dorsal con teclado numérico** en pantalla (1–9, ⌫, 0, ✓), ajustado al cuadrado que cabe en la pantalla redonda: con dos
-  cifras se registra al momento; con una cifra se pulsa ✓; ✓ sin cifras es «Sin dorsal». Con plantilla, debajo del número
+- **Dorsal con teclado numérico** en pantalla (1–9, ⌫, 0, ✓), ajustado al cuadrado que cabe en la pantalla redonda: del 1
+  al 999 (en futsal hay dorsales como el 108), siempre se confirma con ✓; ✓ sin cifras es «Sin dorsal». Con plantilla, debajo del número
   aparece el nombre del jugador. (Antes era una lista con la corona: se cambió porque buscar el número era lento.)
 - **Sin Firebase ni servicios de terceros.** La única red es la API de este repositorio.

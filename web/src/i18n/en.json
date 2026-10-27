@@ -91,7 +91,7 @@
   "dialog.cancel": "Cancel",
   "dialog.confirm": "Confirm",
   "dialog.playerNumber": "Player number",
-  "dialog.playerNumberHint": "1 to 99. Leave it empty if you don't know it.",
+  "dialog.playerNumberHint": "1 to 999. Leave it empty if you don't know it.",
   "dialog.noNumber": "No number",
   "dialog.roster": "Roster",
   "dialog.goalTitle": "Goal for {team}",
@@ -108,7 +108,7 @@
   "dialog.noteTeam": "Team (optional)",
   "dialog.noteNoTeam": "None",
   "dialog.record": "Record",
-  "dialog.invalidNumber": "Enter a number from 1 to 99.",
+  "dialog.invalidNumber": "Enter a number from 1 to 999.",
   "dialog.samePlayers": "The players going off and on must be different.",
 
   "event.goal": "Goal for {team}",
@@ -144,7 +144,7 @@
   "teams.delete": "Delete team",
   "teams.deleteConfirm": "Delete “{name}”? Existing matches keep the name.",
   "teams.duplicateNumber": "Number {number} is repeated.",
-  "teams.invalidNumber": "Numbers go from 1 to 99.",
+  "teams.invalidNumber": "Numbers go from 1 to 999.",
   "teams.nameRequired": "Enter the team name.",
 
   "settings.title": "Settings",

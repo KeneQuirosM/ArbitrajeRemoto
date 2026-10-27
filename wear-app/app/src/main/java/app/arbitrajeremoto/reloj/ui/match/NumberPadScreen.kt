@@ -40,7 +40,8 @@ import app.arbitrajeremoto.reloj.ui.theme.RelojType
 
 /**
  * Shirt-number pad sized to the square inscribed in the round screen: a display line and a
- * 1–9 / ⌫ 0 ✓ grid. Two digits pick at once; ✓ with nothing typed is "No number" (when allowed).
+ * 1–9 / ⌫ 0 ✓ grid. Up to three digits, always confirmed with ✓; ✓ with nothing typed is
+ * "No number" (when allowed).
  * Roster names (block R4) show under the typed number.
  */
 @Composable
@@ -76,7 +77,7 @@ fun NumberPadScreen(
             for (row in listOf(listOf(1, 2, 3), listOf(4, 5, 6), listOf(7, 8, 9))) {
                 Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                     for (d in row) {
-                        DigitKey(d, digits, exclude, keyWidth, keyHeight) { finish(it) }
+                        DigitKey(d, digits, keyWidth, keyHeight) { finish(it) }
                     }
                 }
             }
@@ -90,7 +91,7 @@ fun NumberPadScreen(
                     container = RelojColors.surface,
                     content = RelojColors.textMuted,
                 ) { digits = NumberPad.delete(digits) }
-                DigitKey(0, digits, exclude, keyWidth, keyHeight) { finish(it) }
+                DigitKey(0, digits, keyWidth, keyHeight) { finish(it) }
                 val confirmDescription = if (digits.isEmpty()) stringResource(R.string.picker_no_number) else stringResource(R.string.picker_number, digits.toInt())
                 Key(
                     label = "✓",
@@ -139,7 +140,7 @@ private fun Display(digits: String, title: String, roster: List<RosterPlayer>, a
 }
 
 @Composable
-private fun DigitKey(digit: Int, digits: String, exclude: Int?, width: Dp, height: Dp, onResult: (PadResult) -> Unit) {
+private fun DigitKey(digit: Int, digits: String, width: Dp, height: Dp, onResult: (PadResult) -> Unit) {
     Key(
         label = digit.toString(),
         description = digit.toString(),
@@ -148,7 +149,7 @@ private fun DigitKey(digit: Int, digits: String, exclude: Int?, width: Dp, heigh
         height = height,
         container = RelojColors.surface,
         content = RelojColors.textPrimary,
-    ) { onResult(NumberPad.press(digits, digit, exclude)) }
+    ) { onResult(NumberPad.press(digits, digit)) }
 }
 
 @Composable

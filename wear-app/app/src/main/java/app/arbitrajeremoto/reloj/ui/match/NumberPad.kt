@@ -12,22 +12,19 @@ sealed interface PadResult {
 }
 
 /**
- * Shirt-number pad (1–99). Two digits are confirmed at once (nothing longer exists); one digit,
- * or no digit for "No number", needs ✓. [exclude] is the player going out in a substitution.
+ * Shirt-number pad (1–999, futsal uses numbers like 108). Digits only build the number; it is
+ * always confirmed with ✓, and ✓ with nothing typed is "No number". [exclude] is the player going
+ * out in a substitution.
  */
 object NumberPad {
-    const val MAX_DIGITS = 2
+    const val MAX_DIGITS = 3
 
-    /** No leading 0, at most two digits. */
+    /** No leading 0, at most three digits. */
     fun digitEnabled(digits: String, digit: Int): Boolean =
         digits.length < MAX_DIGITS && !(digits.isEmpty() && digit == 0)
 
-    fun press(digits: String, digit: Int, exclude: Int? = null): PadResult {
-        if (!digitEnabled(digits, digit)) return PadResult.Typing(digits)
-        val next = digits + digit
-        val number = next.toInt()
-        return if (next.length == MAX_DIGITS && number != exclude && valid(number)) PadResult.Done(number) else PadResult.Typing(next)
-    }
+    fun press(digits: String, digit: Int): PadResult.Typing =
+        PadResult.Typing(if (digitEnabled(digits, digit)) digits + digit else digits)
 
     fun delete(digits: String): String = digits.dropLast(1)
 

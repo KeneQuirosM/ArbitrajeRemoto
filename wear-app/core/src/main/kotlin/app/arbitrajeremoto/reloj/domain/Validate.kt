@@ -25,7 +25,7 @@ sealed interface Validated {
 
 object Validate {
     const val MIN_PLAYER_NUMBER = 1
-    const val MAX_PLAYER_NUMBER = 99
+    const val MAX_PLAYER_NUMBER = 999
     const val MAX_PERIODS = 4
     const val MAX_ADDED_MINUTES = 30
     const val NOTE_TEXT = 500

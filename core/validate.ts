@@ -15,7 +15,8 @@ export const LIMITS = {
   deviceName: 40,
   playersPerTeam: 60,
   minPlayerNumber: 1,
-  maxPlayerNumber: 99,
+  // Futsal and amateur leagues use numbers like 108
+  maxPlayerNumber: 999,
   maxPeriods: 4,
   maxPeriodMinutes: 60,
   maxAddedMinutes: 30,

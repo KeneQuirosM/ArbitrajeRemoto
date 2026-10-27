@@ -14,10 +14,12 @@ class ValidateTest {
     private val id = "6f1c1d2e-3b4a-4c5d-8e9f-0a1b2c3d4e5f"
 
     @Test
-    fun `player numbers are 1 to 99`() {
+    fun `player numbers are 1 to 999`() {
         assertNull(Validate.playerNumber(1))
         assertNull(Validate.playerNumber(99))
-        for (bad in listOf(0, 100, -1)) assertEquals("invalid_playerNumber", Validate.playerNumber(bad))
+        assertNull(Validate.playerNumber(108))
+        assertNull(Validate.playerNumber(999))
+        for (bad in listOf(0, 1000, -1)) assertEquals("invalid_playerNumber", Validate.playerNumber(bad))
         assertNull(Validate.playerNumber(null))
         assertEquals("missing_playerInNumber", Validate.playerNumber(null, "playerInNumber", required = true))
     }

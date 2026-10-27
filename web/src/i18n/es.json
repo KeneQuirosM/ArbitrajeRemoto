@@ -91,7 +91,7 @@
   "dialog.cancel": "Cancelar",
   "dialog.confirm": "Confirmar",
   "dialog.playerNumber": "Número de jugador",
-  "dialog.playerNumberHint": "Del 1 al 99. Déjalo vacío si no lo sabes.",
+  "dialog.playerNumberHint": "Del 1 al 999. Déjalo vacío si no lo sabes.",
   "dialog.noNumber": "Sin número",
   "dialog.roster": "Plantilla",
   "dialog.goalTitle": "Gol de {team}",
@@ -108,7 +108,7 @@
   "dialog.noteTeam": "Equipo (opcional)",
   "dialog.noteNoTeam": "Ninguno",
   "dialog.record": "Registrar",
-  "dialog.invalidNumber": "Escribe un número del 1 al 99.",
+  "dialog.invalidNumber": "Escribe un número del 1 al 999.",
   "dialog.samePlayers": "El que sale y el que entra deben ser distintos.",
 
   "event.goal": "Gol de {team}",
@@ -144,7 +144,7 @@
   "teams.delete": "Borrar equipo",
   "teams.deleteConfirm": "¿Borrar «{name}»? Los partidos ya creados conservan el nombre.",
   "teams.duplicateNumber": "El dorsal {number} está repetido.",
-  "teams.invalidNumber": "Los dorsales van del 1 al 99.",
+  "teams.invalidNumber": "Los dorsales van del 1 al 999.",
   "teams.nameRequired": "Escribe el nombre del equipo.",
 
   "settings.title": "Ajustes",

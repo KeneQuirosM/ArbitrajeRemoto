@@ -157,7 +157,7 @@ class WatchContractTest {
         val events = listOf(
             dto(EventType.PERIOD_START, t0, period = 1),
             dto(EventType.GOAL, t0 + 5 * MIN, team = TeamSide.HOME, number = 9),
-            dto(EventType.OWN_GOAL, t0 + 8 * MIN, team = TeamSide.AWAY, number = 4),
+            dto(EventType.OWN_GOAL, t0 + 8 * MIN, team = TeamSide.AWAY, number = 108), // futsal: three digits
             dto(EventType.YELLOW_CARD, t0 + 10 * MIN, team = TeamSide.AWAY, number = 5),
             dto(EventType.YELLOW_CARD, t0 + 12 * MIN, team = TeamSide.AWAY, number = 5),
             dto(EventType.SUBSTITUTION, t0 + 15 * MIN).copy(team = "home", playerOutNumber = 10, playerInNumber = 14),
