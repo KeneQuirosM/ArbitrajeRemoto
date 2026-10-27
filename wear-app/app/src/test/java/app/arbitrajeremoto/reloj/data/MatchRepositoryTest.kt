@@ -57,7 +57,7 @@ class MatchRepositoryTest {
         repo.record(id, EventDraft(EventType.YELLOW_CARD, team = TeamSide.AWAY, playerNumber = 4))
         repo.record(id, EventDraft(EventType.YELLOW_CARD, team = TeamSide.AWAY, playerNumber = 4))
 
-        val rejected = repo.record(id, EventDraft(EventType.GOAL, team = TeamSide.HOME, playerNumber = 100))
+        val rejected = repo.record(id, EventDraft(EventType.GOAL, team = TeamSide.HOME, playerNumber = 1000))
         assertEquals("invalid_playerNumber", rejected.exceptionOrNull()?.message)
         assertEquals("period_out_of_range", repo.record(id, EventDraft(EventType.PERIOD_START, period = 3)).exceptionOrNull()?.message)
 
