@@ -74,9 +74,12 @@
     <string name="more_own_goal">Autogol %1$s</string>
     <string name="more_substitution">Cambio %1$s</string>
     <string name="more_added_time">Tiempo añadido</string>
+    <string name="pad_delete">Borrar</string>
+    <string name="pad_hint_none">Escribe el dorsal · ✓ = sin dorsal</string>
+    <string name="pad_hint">Escribe el dorsal</string>
+    <string name="pad_same_player">Es el mismo que sale</string>
     <string name="picker_no_number">Sin dorsal</string>
     <string name="picker_number">Dorsal %1$d</string>
-    <string name="picker_player">%1$d · %2$s</string>
     <string name="picker_title">%1$s · %2$s</string>
     <string name="picker_sub_out">Sale · %1$s</string>
     <string name="picker_sub_in">Entra · %1$s (sale %2$d)</string>

@@ -22,7 +22,7 @@ import app.arbitrajeremoto.reloj.ui.match.ClockRareScreen
 import app.arbitrajeremoto.reloj.ui.match.MatchScreen
 import app.arbitrajeremoto.reloj.ui.match.MatchViewModel
 import app.arbitrajeremoto.reloj.ui.match.MoreScreen
-import app.arbitrajeremoto.reloj.ui.match.NumberPickerScreen
+import app.arbitrajeremoto.reloj.ui.match.NumberPadScreen
 import app.arbitrajeremoto.reloj.ui.match.UndoScreen
 import app.arbitrajeremoto.reloj.ui.match.WithMatch
 import app.arbitrajeremoto.reloj.ui.match.eventName
@@ -167,7 +167,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 val type = EventType.fromWire(entry.arguments?.getString("type")) ?: EventType.GOAL
                 val team = TeamSide.fromWire(entry.arguments?.getString("team")) ?: TeamSide.HOME
                 WithMatch(matchViewModel, id) { view ->
-                    NumberPickerScreen(
+                    NumberPadScreen(
                         title = stringResource(R.string.picker_title, stringResource(eventName(type)), view.teamName(team)),
                         roster = rosterOf(view, team),
                         allowNone = true,
@@ -179,7 +179,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 val id = entry.arguments?.getString("id").orEmpty()
                 val team = TeamSide.fromWire(entry.arguments?.getString("team")) ?: TeamSide.HOME
                 WithMatch(matchViewModel, id) { view ->
-                    NumberPickerScreen(
+                    NumberPadScreen(
                         title = stringResource(R.string.picker_sub_out, view.teamName(team)),
                         roster = rosterOf(view, team),
                         allowNone = false,
@@ -192,7 +192,7 @@ fun RelojNavHost(viewModel: MainViewModel) {
                 val team = TeamSide.fromWire(entry.arguments?.getString("team")) ?: TeamSide.HOME
                 val out = entry.arguments?.getString("out")?.toIntOrNull() ?: 0
                 WithMatch(matchViewModel, id) { view ->
-                    NumberPickerScreen(
+                    NumberPadScreen(
                         title = stringResource(R.string.picker_sub_in, view.teamName(team), out),
                         roster = rosterOf(view, team),
                         allowNone = false,

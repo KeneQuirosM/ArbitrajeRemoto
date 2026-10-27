@@ -7,8 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
@@ -29,52 +27,6 @@ import app.arbitrajeremoto.reloj.ui.theme.RelojType
 
 /** A shirt number of a team's roster (block R4), with the player's name when known. */
 data class RosterPlayer(val number: Int, val name: String?)
-
-/**
- * Shirt-number picker without a keyboard: a list turned with the crown/bezel or by swiping.
- * Roster players first (with names), then "No number" (when allowed) and 1–99.
- */
-@Composable
-fun NumberPickerScreen(
-    title: String,
-    roster: List<RosterPlayer>,
-    allowNone: Boolean,
-    exclude: Int? = null,
-    onPick: (Int?) -> Unit,
-) {
-    val numbers = remember(exclude) { (Validate.MIN_PLAYER_NUMBER..Validate.MAX_PLAYER_NUMBER).filter { it != exclude } }
-    val players = remember(roster, exclude) { roster.filter { it.number != exclude } }
-    RelojList {
-        item { ScreenTitle(title) }
-        items(players, key = { "p${it.number}" }) { p ->
-            val label = if (p.name.isNullOrBlank()) p.number.toString() else stringResource(R.string.picker_player, p.number, p.name)
-            Button(
-                onClick = { onPick(p.number) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(label, fontSize = RelojType.title, maxLines = 1) },
-            )
-        }
-        if (allowNone) {
-            item(key = "none") {
-                FilledTonalButton(
-                    onClick = { onPick(null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.picker_no_number), fontSize = RelojType.title) },
-                )
-            }
-        }
-        items(numbers, key = { "n$it" }) { n ->
-            val spoken = stringResource(R.string.picker_number, n)
-            FilledTonalButton(
-                onClick = { onPick(n) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = spoken },
-                label = { Text(n.toString(), fontSize = RelojType.title) },
-            )
-        }
-    }
-}
 
 /** Own goal and substitution for each team, and the announced added time. */
 @Composable

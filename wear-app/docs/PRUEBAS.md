@@ -41,7 +41,7 @@ Instalación: [`../README.md`](../README.md#instalar-en-el-galaxy-watch-4-paso-a
 - [ ] **Ajustes → Servidor:** el predeterminado es `https://arbitraje-remoto.vercel.app/api/v1`. En debug, «Local (adb reverse)»
   con `adb reverse tcp:8787 tcp:8787` funciona contra `npm run dev:api`. Cambiar de servidor pide vincular otra vez.
 - [ ] La URL por `adb shell am start … --es server_url …` se aplica en debug.
-- [ ] TalkBack (Ajustes → Accesibilidad): lee el código letra a letra y los botones con su nombre.
+- [ ] TalkBack (Ajustes → Accesibilidad): lee el código letra a letra, los botones con su nombre y cada tecla del teclado de dorsal.
 
 ## R2. Partido sin conexión
 
@@ -49,12 +49,14 @@ Instalación: [`../README.md`](../README.md#instalar-en-el-galaxy-watch-4-paso-a
 - [ ] Tiempo añadido: pasado el minuto 45 se ve «45+1′», «45+2′»…; «Más → Tiempo añadido → +3» muestra «+3 anunciados».
 - [ ] Botón del cronómetro: tocar = Iniciar / Pausar / Reanudar / Iniciar 2.º tiempo. **Mantener pulsado** = «Fin del 1.º tiempo» /
   «Terminar partido». Un toque accidental no termina nada.
-- [ ] Selector de dorsal: la **corona o el bisel** recorren la lista (1–99 y «Sin dorsal») con fluidez.
+- [ ] **Teclado de dorsal**: las teclas se pulsan bien con el dedo y no se cortan en los bordes de la pantalla redonda.
+- [ ] «10» se registra al tocar la segunda cifra; «9» necesita ✓; ✓ sin cifras registra «Sin dorsal»; ⌫ borra.
+- [ ] En un cambio, el dorsal que entra no puede ser el mismo que sale («Es el mismo que sale»).
 - [ ] Segunda amarilla del mismo dorsal: aparece en «Expulsados: Visitante 5 (2.ª amarilla)».
 - [ ] Autogol y Cambio desde «Más»; el cambio no deja elegir el mismo dorsal para entrar.
 - [ ] **Vibración** corta al registrar cada evento (y no al abrir pantallas).
 - [ ] La pantalla **no se apaga** mientras el partido está en juego; en descanso o al terminar vuelve a apagarse normal.
-- [ ] Toque doble rápido en «Gol» → «9» dos veces: dos goles con minutos correctos, ninguno se pierde.
+- [ ] Dos goles seguidos («Gol» → «9» → ✓, dos veces): dos goles con minutos correctos, ninguno se pierde.
 - [ ] Reinicia el reloj a mitad de partido: al abrir la app, el marcador y el minuto son correctos.
 
 ## R3. Sincronización
@@ -70,6 +72,6 @@ Instalación: [`../README.md`](../README.md#instalar-en-el-galaxy-watch-4-paso-a
 
 - [ ] «Partidos del día» lista los partidos programados y en juego de la web, con hora y marcador.
 - [ ] Sin red, «Partidos del día» muestra la última lista guardada y «Sin conexión: se muestra la última lista».
-- [ ] Abrir un partido creado en la web con plantillas: el selector de dorsal muestra primero «9 · Delantera», etc.
+- [ ] Abrir un partido creado en la web con plantillas: al teclear «9» aparece debajo «Delantera».
 - [ ] Con un partido de la web abierto en el reloj, un gol registrado en la web aparece en el reloj en ~20 s.
 - [ ] Eventos registrados en el reloj en un partido de la web aparecen en la web.

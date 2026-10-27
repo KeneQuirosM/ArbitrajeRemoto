@@ -11,7 +11,7 @@ repositorio cuando hay conexión. Sigue [`docs/GUIA_RELOJ.md`](../docs/GUIA_RELO
 | Bloque | Contenido |
 |---|---|
 | R1 | Vincular con un código de 6 letras (se escribe en la web: **Ajustes → Relojes**). Clave cifrada con AES/GCM del Android Keystore. Ajuste «Servidor». |
-| R2 | Partido rápido sin conexión: marcador, cronómetro derivado de los eventos, gol/amarilla/roja con dorsal (corona o bisel), autogol, cambio, tiempo añadido, deshacer. |
+| R2 | Partido rápido sin conexión: marcador, cronómetro derivado de los eventos, gol/amarilla/roja con dorsal en un teclado numérico, autogol, cambio, tiempo añadido, deshacer. |
 | R3 | Cola de envío idempotente (envío inmediato + WorkManager con red), punto de estado verde/ámbar/gris, pruebas de contrato contra la API real. |
 | R4 | Partidos del día (`GET /matches`), plantillas (`GET /teams`) con nombres en el selector de dorsal, abrir un partido creado en la web. |
 
@@ -129,6 +129,7 @@ Bluetooth, solo usar su Wi‑Fi compartida. **Por verificar** con tu reloj.
   recalcula con los eventos, así que si la pantalla se apaga no se pierde nada. Coste: batería (**por verificar**).
 - **Clave**: AES‑256/GCM con una clave del Android Keystore; el resultado va en DataStore (`reloj_prefs`), excluido de
   copias de seguridad y transferencias (`data_extraction_rules.xml`, `backup_rules.xml`). Sin `EncryptedSharedPreferences`.
-- **Dorsal sin teclado**: lista de 1 a 99 (más «Sin dorsal») que se gira con la corona/bisel; con plantilla, primero los
-  jugadores con su nombre.
+- **Dorsal con teclado numérico** en pantalla (1–9, ⌫, 0, ✓), ajustado al cuadrado que cabe en la pantalla redonda: con dos
+  cifras se registra al momento; con una cifra se pulsa ✓; ✓ sin cifras es «Sin dorsal». Con plantilla, debajo del número
+  aparece el nombre del jugador. (Antes era una lista con la corona: se cambió porque buscar el número era lento.)
 - **Sin Firebase ni servicios de terceros.** La única red es la API de este repositorio.

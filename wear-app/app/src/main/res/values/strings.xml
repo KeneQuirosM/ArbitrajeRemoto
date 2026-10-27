@@ -74,9 +74,12 @@
     <string name="more_own_goal">Own goal %1$s</string>
     <string name="more_substitution">Substitution %1$s</string>
     <string name="more_added_time">Added time</string>
+    <string name="pad_delete">Delete</string>
+    <string name="pad_hint_none">Type the number · ✓ = no number</string>
+    <string name="pad_hint">Type the number</string>
+    <string name="pad_same_player">Same as the player out</string>
     <string name="picker_no_number">No number</string>
     <string name="picker_number">Number %1$d</string>
-    <string name="picker_player">%1$d · %2$s</string>
     <string name="picker_title">%1$s · %2$s</string>
     <string name="picker_sub_out">Player out · %1$s</string>
     <string name="picker_sub_in">Player in · %1$s (out %2$d)</string>
